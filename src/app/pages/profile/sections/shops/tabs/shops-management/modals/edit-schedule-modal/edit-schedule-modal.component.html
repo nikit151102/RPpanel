@@ -1,0 +1,57 @@
+<div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-container wide" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2 class="modal-title">🕒 Редактирование расписания</h2>
+            <button class="close-button" (click)="closeModal()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" />
+                </svg>
+            </button>
+        </div>
+
+        <div class="modal-content">
+            <div class="schedule-grid">
+                <div *ngFor="let day of weekDays" class="schedule-day-editor">
+                    <div class="day-header">{{ day.name }}</div>
+
+                    <div class="time-inputs">
+                        <div class="time-input-group">
+                            <label>Открытие</label>
+                            <input type="time" [value]="getOpenTime(day.id)"
+                                (input)="onTimeChange(day.id, 'openTime', $event)" class="time-input"
+                                [disabled]="isDayClosed(day.id)">
+                        </div>
+
+                        <div class="time-input-group">
+                            <label>Закрытие</label>
+                            <input type="time" [value]="getCloseTime(day.id)"
+                                (input)="onTimeChange(day.id, 'closeTime', $event)" class="time-input"
+                                [disabled]="isDayClosed(day.id)">
+                        </div>
+                    </div>
+
+                    <label class="toggle-label small">
+                        <input type="checkbox" [checked]="!isDayClosed(day.id)" (change)="toggleDay(day.id, $event)">
+                        <span class="toggle-slider"></span>
+                        <span class="toggle-text">{{ isDayClosed(day.id) ? 'Выходной' : 'Рабочий' }}</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-actions">
+            <button type="button" class="secondary-btn" (click)="closeModal()">Отмена</button>
+            <button type="button" class="primary-btn" (click)="saveSchedule()" [disabled]="isLoading">
+                <span *ngIf="!isLoading">💾 Сохранить расписание</span>
+                <span *ngIf="isLoading" class="loading">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"
+                            opacity="0.3" />
+                        <path d="M12 2a10 10 0 0 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z" />
+                    </svg>
+                    Сохранение...
+                </span>
+            </button>
+        </div>
+    </div>
+</div>

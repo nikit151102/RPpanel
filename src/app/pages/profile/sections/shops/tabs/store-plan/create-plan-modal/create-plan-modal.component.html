@@ -1,0 +1,115 @@
+<!-- create-plan-modal.component.html -->
+<div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2 class="modal-title">📊 Создание нового плана</h2>
+            <button class="close-button" (click)="closeModal()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                </svg>
+            </button>
+        </div>
+
+        <form class="modal-content" (submit)="$event.preventDefault(); onSubmit()">
+            <!-- Period Selection Section -->
+            <div class="period-section">
+                <h3 class="section-title">📅 Период планирования</h3>
+                <div class="period-display">
+                    <span class="period-text">{{ getPeriodDisplay() }}</span>
+                    <span class="period-dates">
+                        ({{ newPlan.beginDateTime | date:'dd.MM.yyyy' }} - {{ newPlan.endDateTime | date:'dd.MM.yyyy' }})
+                    </span>
+                </div>
+                <div class="period-selectors">
+                    <div class="selector-group">
+                        <label class="selector-label">Месяц</label>
+                        <select class="modern-select" [(ngModel)]="selectedMonth" 
+                                (change)="onMonthYearChange()" name="month">
+                            <option *ngFor="let month of months" [value]="month.value">
+                                {{ month.name }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="selector-group">
+                        <label class="selector-label">Год</label>
+                        <select class="modern-select" [(ngModel)]="selectedYear" 
+                                (change)="onMonthYearChange()" name="year">
+                            <option *ngFor="let year of years" [value]="year">
+                                {{ year }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="input-group">
+                    <label class="input-label">
+                        <span class="label-text">Номер плана</span>
+                        <input type="text" class="modern-input" [(ngModel)]="newPlan.number" name="number"
+                            placeholder="Будет сгенерирован автоматически">
+                        <div class="input-hint">Оставьте пустым для автогенерации: МП-ГГГГММ</div>
+                    </label>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">
+                        <span class="label-text">Магазин *</span>
+                        <select class="modern-select" [(ngModel)]="newPlan.storeId" name="storeId" required>
+                            <option value="">Выберите магазин</option>
+                            <option *ngFor="let store of stores" [value]="store.id">
+                                🏪 {{ store?.address?.city }}, {{ store?.address?.street }}, {{ store?.address?.house }}
+                            </option>
+                        </select>
+                    </label>
+                </div>
+
+                <!-- <div class="input-group">
+                    <label class="input-label">
+                        <span class="label-text">Ответственный</span>
+                        <select class="modern-select" [(ngModel)]="newPlan.userInstanceId" name="userInstanceId">
+                            <option value="">Выберите ответственного</option>
+                            <option *ngFor="let user of users" [value]="user.id">
+                                👤 {{ user.firstName }} {{ user.lastName }}
+                            </option>
+                        </select>
+                    </label>
+                </div> -->
+
+                <div class="input-group">
+                    <label class="input-label">
+                        <span class="label-text">План месяца</span>
+                        <input type="number" class="modern-input" [(ngModel)]="newPlan.monthPlan" name="monthPlan"
+                            placeholder="0" min="1" step="1">
+                        <div class="input-hint">Основной плановый показатель</div>
+                    </label>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">
+                        <span class="label-text">Бухгалтерский план</span>
+                        <input type="number" class="modern-input" [(ngModel)]="newPlan.monthPlanAccountant"
+                            name="monthPlanAccountant" placeholder="0" min="1" step="1">
+                        <div class="input-hint">План для бухгалтерского учета</div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="secondary-btn" (click)="closeModal()">
+                    Отмена
+                </button>
+                <button type="submit" class="primary-btn" [disabled]="isSubmitting || !newPlan.storeId">
+                    <span *ngIf="!isSubmitting">🚀 Создать план</span>
+                    <span *ngIf="isSubmitting" class="loading">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z" opacity="0.3"/>
+                            <path d="M12 2a10 10 0 0 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/>
+                        </svg>
+                        Создание...
+                    </span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,42 @@
+<div class="p-toolbar-group-left">
+    <button pButton label="Создать" icon="pi pi-plus" class="p-button-success" (click)="openNew()"></button>
+</div>
+<p-table [value]="managers" [paginator]="true" [rows]="10" [responsive]="true" [resizableColumns]="true">
+    <ng-template pTemplate="header">
+        <tr>
+            <th>ФИО</th>
+            <th style="width: 150px">Действия</th>
+        </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-manager>
+        <tr>
+            <td>{{ manager.name }}</td>
+            <td>
+                <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-text p-button-info"
+                    (click)="editManager(manager)"></button>
+                <button pButton icon="pi pi-trash" class="p-button-rounded p-button-text p-button-danger"
+                    (click)="deleteManager(manager)"></button>
+            </td>
+        </tr>
+    </ng-template>
+</p-table>
+
+<p-dialog header="{{ isEdit ? 'Edit Manager' : 'New Manager' }}" [(visible)]="managerDialog" [modal]="true"
+    [style]="{width: '400px'}" [closable]="false">
+    <div class="p-fluid">
+        <div class="p-field">
+            <label for="name">ФИО</label>
+            <input id="name" type="text" pInputText [(ngModel)]="manager.name"
+                [ngClass]="{'p-invalid': submitted && !manager.name.trim()}" />
+            <small *ngIf="submitted && !manager.name.trim()" class="p-error">ФИО обязательно.</small>
+        </div>
+    </div>
+
+    <p-footer>
+        <button pButton label="Cancel" icon="pi pi-times" class="p-button-text" (click)="hideDialog()"></button>
+        <button pButton label="Save" icon="pi pi-check" class="p-button-text" (click)="saveManager()"></button>
+    </p-footer>
+</p-dialog>
+
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>

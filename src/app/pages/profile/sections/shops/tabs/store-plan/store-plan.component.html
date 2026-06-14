@@ -1,0 +1,422 @@
+<div class="plans-modern">
+    <!-- Navigation -->
+    <nav class="modern-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <div class="brand-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4zm2.5 2.1h-15V5h15v14.1zm0-16.1h-15c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z" />
+                    </svg>
+                </div>
+                <span class="brand-text">Планы торговых точек</span>
+            </div>
+            @if (isDirectorOrChiefAccountant()) {
+            <div class="nav-tabs">
+                <button *ngFor="let tab of ['plans', 'analytics']" [class.active]="activeTab === tab"
+                    (click)="selectTab(tab)" class="nav-tab">
+                    <span class="tab-icon">
+                        <ng-container [ngSwitch]="tab">
+                            <svg *ngSwitchCase="'plans'" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4zm2.5 2.1h-15V5h15v14.1zm0-16.1h-15c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z" />
+                            </svg>
+                            <svg *ngSwitchCase="'analytics'" width="18" height="18" viewBox="0 0 24 24"
+                                fill="currentColor">
+                                <path
+                                    d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z" />
+                            </svg>
+                        </ng-container>
+                    </span>
+                    <span class="tab-label">{{ getTabLabel(tab) }}</span>
+                    <div class="tab-indicator"></div>
+                </button>
+            </div>
+            }
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <!-- Plans Section -->
+        <section *ngIf="activeTab === 'plans'" class="modern-section">
+            <div class="section-header">
+                <div class="header-content">
+                    <h1 class="section-title">
+                        <span class="title-icon">📊</span>
+                        Планы торговых точек
+                    </h1>
+                    <p class="section-subtitle">Управление месячными планами</p>
+                </div>
+                @if (isDirectorOrChiefAccountant()) {
+                <button class="create-btn" (click)="openCreatePlanModal()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                    </svg>
+                    Новый план
+                </button>
+                }
+            </div>
+
+            <!-- Filters -->
+            <div class="filters-panel glass-card">
+                <div class="filters-header">
+                    <h3>🔍 Фильтры и поиск</h3>
+                    <div class="period-display">
+                        <span class="period-text">{{ selectedPeriodDisplay }}</span>
+                    </div>
+                </div>
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label class="filter-label">Месяц</label>
+                        <select class="modern-select" [(ngModel)]="filters.selectedMonth"
+                            (change)="onMonthYearChange()">
+                            <option *ngFor="let month of months" [value]="month.value">
+                                {{ month.name }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">Год</label>
+                        <select class="modern-select" [(ngModel)]="filters.selectedYear" (change)="onMonthYearChange()">
+                            <option *ngFor="let year of years" [value]="year">
+                                {{ year }}
+                            </option>
+                        </select>
+                    </div>
+
+                    @if (isDirectorOrChiefAccountant()) {
+
+                    <div class="filter-group">
+                        <label class="filter-label">Магазин</label>
+                        <select class="modern-select" [(ngModel)]="filters.storeId" (change)="applyFilters()">
+                            <option value="">Все магазины</option>
+                            <option *ngFor="let store of stores" [value]="store.id">
+                                {{ store.address.city }}, {{ store.address.street }},{{ store.address.house }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">Статус</label>
+                        <select class="modern-select" [(ngModel)]="filters.status" (change)="applyFilters()">
+                            <option value="">Все статусы</option>
+                            <option value="active">Активные</option>
+                            <option value="completed">Завершенные</option>
+                            <option value="draft">Черновики</option>
+                        </select>
+                    </div>
+
+                    }
+                </div>
+
+                <div class="filters-footer">
+                    <div class="search-box">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                        </svg>
+                        <input type="text" placeholder="Поиск по номеру плана..." [(ngModel)]="searchQuery"
+                            (input)="onSearch()" class="search-input">
+                    </div>
+                    <button class="text-btn" (click)="clearFilters()">
+                        Очистить фильтры
+                    </button>
+                </div>
+            </div>
+
+
+            <!-- Plans Grid -->
+            <div class="plans-grid">
+                <!-- Plans List -->
+                <div class="list-panel glass-card">
+                    <div class="panel-header">
+                        <h3>Список планов</h3>
+                        @if (isDirectorOrChiefAccountant()) {
+                        <div class="header-actions">
+                            <button class="export" (click)="importPlan()">Импорт планов</button>
+                            <button class="export" (click)="downloadTemplate()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"
+                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round" />
+                                </svg>
+                                Шаблон
+                            </button>
+                            <button class="export" (click)="exportExcel()">Сформировать отчет</button>
+                        </div>
+                        }
+                    </div>
+
+                    <div class="modern-list" #planList (scroll)="onScroll($event)">
+                        <div *ngFor="let plan of plans" class="list-item"
+                            [class.selected]="selectedPlan?.id === plan.id" (click)="selectPlan(plan)">
+                            <div class="item-avatar">
+                                <div class="avatar" [class]="getPlanStatus(plan)">📊</div>
+                            </div>
+                            <div class="item-content">
+                                <h4 class="item-title">План №{{ plan.number }}</h4>
+                                <p class="item-description" *ngIf="plan.store && plan.store.name1C">
+                                    {{ plan.store.name1C }}
+                                </p>
+                                <div class="item-meta">
+                                    <span class="meta-tag">📅 {{ plan.beginDateTime | date:'MMM yyyy' }}</span>
+                                    <span class="meta-tag"
+                                        *ngIf="plan.userInstance && plan.userInstance.firstName && plan.userInstance.lastName">
+                                        👤 {{ plan.userInstance.firstName }} {{ plan.userInstance.lastName }}
+                                    </span>
+                                    <span *ngIf="plan.documentSignature != null" class="status-badge signed">
+                                        Подписан
+                                    </span>
+                                    <span *ngIf="plan.documentSignature == null" class="status-badge not-signed">
+                                        Не подписан
+                                    </span>
+                                </div>
+                                <div class="plan-stats">
+                                    <div class="stat-bar">
+                                        <div class="stat-label">План месяца</div>
+                                        <div class="stat-value">{{ plan.monthPlanAccountant | number:'1.0-0' }} ₽</div>
+                                    </div>
+                                    <!-- <div class="stat-bar">
+                                        <div class="stat-label">Бухгалтерский план</div>
+                                        <div class="stat-value">{{ plan.monthPlanAccountant | number:'1.0-0' }} ₽</div>
+                                    </div> -->
+                                </div>
+                            </div>
+                            <div class="item-actions">
+                                @if (isDirectorOrChiefAccountant()) {
+                                <button class="action-btn danger"
+                                    (click)="$event.stopPropagation(); deletePlan(plan.id)" title="Удалить">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                        <path
+                                            d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+                                    </svg>
+                                </button>
+                                }
+                                @if (isDirectorOrChiefAccountant() && plan.documentSignature &&
+                                plan.documentSignature.id) {
+                                <button class="action-btn"
+                                    (click)="$event.stopPropagation(); deleteSignature(plan.documentSignature.id)"
+                                    title="Удалить">
+                                    Удалить подпись
+                                </button>
+                                }
+                                <button class="action-btn" style="width: fit-content;"
+                                    (click)="$event.stopPropagation();" title="Подписать"
+                                    [routerLink]="'/profile/shops/signature/' + plan.id">
+                                    {{ plan.documentSignature == null ? 'Подписать' : 'Просмотреть' }}
+                                </button>
+
+                            </div>
+                        </div>
+
+                        <div *ngIf="isLoading" class="loading-more">
+                            <div class="loading-spinner"></div>
+                            <span>Загрузка...</span>
+                        </div>
+
+                        <div *ngIf="plans.length === 0 && !isLoading" class="empty-list">
+                            <div class="empty-icon">📊</div>
+                            <p>{{ searchQuery ? 'Планы не найдены' : 'Планы отсутствуют' }}</p>
+                            <button *ngIf="!searchQuery" class="text-btn" (click)="openCreatePlanModal()">
+                                Создать первый план
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Plan Details -->
+                <div class="details-panel glass-card" *ngIf="selectedPlan">
+                    <div class="panel-header">
+                        <h3>📝 Детали плана</h3>
+                        <div class="plan-period">
+                            {{ selectedPlan.beginDateTime | date:'MMMM yyyy' }}
+                        </div>
+                    </div>
+
+                    <div class="plan-details">
+                        <div class="detail-section">
+                            <h4>Основная информация</h4>
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <span class="detail-label">Номер плана:</span>
+                                    <span class="detail-value">{{ selectedPlan.number }}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Период:</span>
+                                    <span class="detail-value">{{ selectedPlan.beginDateTime | date:'MMMM yyyy'
+                                        }}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Магазин:</span>
+                                    <span class="detail-value" *ngIf="selectedPlan.store && selectedPlan.store.name1C">
+                                        {{ selectedPlan.store.name1C }}
+                                    </span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Ответственный:</span>
+                                    <span class="detail-value"
+                                        *ngIf="selectedPlan.userInstance && selectedPlan.userInstance.firstName && selectedPlan.userInstance.lastName">
+                                        {{ selectedPlan.userInstance.firstName }} {{ selectedPlan.userInstance.lastName
+                                        }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="detail-section">
+                            <h4>Плановые показатели</h4>
+                            <div class="plan-metrics">
+                                <div class="metric-card">
+                                    <div class="metric-icon">🎯</div>
+                                    <div class="metric-content">
+                                        <div class="metric-value">{{ selectedPlan.monthPlanAccountant | number:'1.0-0'
+                                            }} ₽</div>
+                                        <div class="metric-label">План месяца</div>
+                                    </div>
+                                </div>
+                                <!-- <div class="metric-card">
+                                    <div class="metric-icon">📈</div>
+                                    <div class="metric-content">
+                                        <div class="metric-value">{{ selectedPlan.monthPlanAccountant | number:'1.0-0'
+                                            }} ₽</div>
+                                        <div class="metric-label">Бухгалтерский план</div>
+                                    </div>
+                                </div> -->
+                            </div>
+                        </div>
+
+                        <div class="detail-section"
+                            *ngIf="selectedPlan.storePlans && selectedPlan.storePlans.length > 0">
+                            <h4>Детали плана</h4>
+                            <div class="plan-items">
+                                <div *ngFor="let item of selectedPlan.storePlans" class="plan-item">
+                                    <div class="plan-item-header">
+                                        <span class="item-type">{{ item.storePlanType?.shortName || 'Тип не указан'
+                                            }}</span>
+                                        <span class="item-value">{{ item.value | number:'1.0-0' }} ₽</span>
+                                    </div>
+                                    <div class="plan-item-date">
+                                        {{ item.dateTime | date:'dd.MM.yyyy' }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="detail-section" *ngIf="selectedPlan.documentSignature">
+                            <h4>Подпись документа</h4>
+                            <div class="signature-info">
+                                <div class="signature-detail">
+                                    <span class="detail-label">Подписан:</span>
+                                    <span class="detail-value">{{ selectedPlan.documentSignature.dateTime |
+                                        date:'dd.MM.yyyy HH:mm' }}</span>
+                                </div>
+                                <div class="signature-detail">
+                                    <span class="detail-label">Подписант:</span>
+                                    <span class="detail-value" *ngIf="selectedPlan.documentSignature.userInstance">
+                                        {{ selectedPlan.documentSignature.userInstance.firstName
+                                        }} {{ selectedPlan.documentSignature.userInstance.lastName }}</span>
+                                </div>
+                                <button class="text-btn" *ngIf="selectedPlan.documentSignature.remoteFileInfo">
+                                    📎 Скачать документ
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Analytics Section -->
+        <section *ngIf="activeTab === 'analytics'" class="modern-section">
+            <div class="section-header">
+                <div class="header-content">
+                    <h1 class="section-title">
+                        <span class="title-icon">📈</span>
+                        Аналитика планов
+                    </h1>
+                    <p class="section-subtitle">Анализ выполнения планов и статистика</p>
+                </div>
+            </div>
+
+            <div class="analytics-grid">
+                <!-- Performance Chart -->
+                <div class="chart-panel glass-card">
+                    <div class="panel-header">
+                        <h3>📊 Выполнение планов</h3>
+                        <select class="modern-select small" [(ngModel)]="analyticsPeriod" (change)="loadAnalytics()">
+                            <option value="month">За месяц</option>
+                            <option value="quarter">За квартал</option>
+                            <option value="year">За год</option>
+                        </select>
+                    </div>
+                    <div class="chart-container">
+                        <div class="performance-chart">
+                            <div *ngFor="let item of performanceData" class="chart-item">
+                                <div class="chart-bar-container">
+                                    <div class="chart-bar plan" [style.height]="item.planPercent + '%'">
+                                        <span class="bar-value">{{ item.plan | number:'1.0-0' }}</span>
+                                    </div>
+                                    <div class="chart-bar actual" [style.height]="item.actualPercent + '%'">
+                                        <span class="bar-value">{{ item.actual | number:'1.0-0' }}</span>
+                                    </div>
+                                </div>
+                                <div class="chart-label">{{ item.store }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Performers -->
+                <div class="performers-panel glass-card">
+                    <div class="panel-header">
+                        <h3>🏆 Лучшие показатели</h3>
+                    </div>
+                    <div class="performers-list">
+                        <div *ngFor="let performer of topPerformers; let i = index" class="performer-item">
+                            <div class="performer-rank">{{ i + 1 }}</div>
+                            <div class="performer-avatar">
+                                <div class="avatar">🏪</div>
+                            </div>
+                            <div class="performer-content">
+                                <h4 class="performer-name">{{ performer.store }}</h4>
+                                <p class="performer-metric">Выполнение: {{ performer.completion }}%</p>
+                            </div>
+                            <div class="performer-value">
+                                {{ performer.value | number:'1.0-0' }} ₽
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Plan Types Distribution -->
+                <div class="distribution-panel glass-card">
+                    <div class="panel-header">
+                        <h3>🎯 Распределение по типам</h3>
+                    </div>
+                    <div class="distribution-chart">
+                        <div *ngFor="let type of planTypesDistribution" class="distribution-item">
+                            <div class="distribution-info">
+                                <span class="type-name">{{ type.name }}</span>
+                                <span class="type-value">{{ type.value | number:'1.0-0' }} ₽</span>
+                            </div>
+                            <div class="distribution-bar">
+                                <div class="bar-fill" [style.width]="type.percentage + '%'"></div>
+                            </div>
+                            <span class="type-percentage">{{ type.percentage }}%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<!-- Create Plan Modal -->
+@if (showCreatePlanModal) {
+<app-create-plan-modal [stores]="stores" [users]="users" [planTypes]="planTypes" (closed)="closeCreatePlanModal()"
+    (planCreated)="onPlanCreated($event)">
+</app-create-plan-modal>
+}

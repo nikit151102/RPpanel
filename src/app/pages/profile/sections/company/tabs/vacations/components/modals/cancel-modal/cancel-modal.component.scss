@@ -1,0 +1,23 @@
+@import '../modal-base.scss';
+
+.alert-warning {
+  background: rgba(255, 209, 102, 0.1);
+  color: #856404;
+  border-left: 4px solid #ffd166;
+}
+
+.btn-warning {
+  background: linear-gradient(135deg, #ffd166, #ffc043);
+  border: none;
+  color: #2d3748;
+
+  &:hover:not(:disabled) {
+    background: linear-gradient(135deg, #ffc043, #ffb82e);
+    transform: translateY(-2px);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}

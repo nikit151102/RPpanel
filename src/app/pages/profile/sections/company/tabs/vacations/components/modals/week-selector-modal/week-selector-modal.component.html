@@ -1,0 +1,64 @@
+<div class="modal-overlay show">
+  <div class="modal-container modal-xl">
+    <div class="modal-header bg-info text-white">
+      <h3><i class="fas fa-calendar-alt me-2"></i>Выбор недели для отпуска</h3>
+      <button class="close-btn text-white" (click)="close.emit()">×</button>
+    </div>
+    
+    <div class="modal-body">
+      <div class="alert alert-info mb-3">
+        <i class="fas fa-info-circle me-2"></i>
+        Выбор для: {{ selectedUser?.first_name }} {{ selectedUser?.last_name }} ({{ selectedPeriodForUser === 'week' ? '1 неделя' : '2 недели' }})
+      </div>
+      
+      <div *ngIf="isLoadingWeeks" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Загрузка...</span>
+        </div>
+        <p class="mt-3">Загрузка доступных недель...</p>
+      </div>
+      
+      <div class="weeks-grid" *ngIf="!isLoadingWeeks">
+        <div *ngFor="let week of availableWeeksUser" 
+             class="week-card" 
+             [class.available]="week.isAvailable"
+             [class.unavailable]="!week.isAvailable"
+             (click)="onWeekSelect(week)">
+          
+          <div class="week-card-header">
+            <h6>Неделя {{ week.weekNumber }}</h6>
+            <span class="badge" [ngClass]="{
+              'bg-success': week.isAvailable,
+              'bg-danger': !week.isAvailable
+            }">
+              {{ week.isAvailable ? 'Доступно' : 'Занято' }}
+            </span>
+          </div>
+          
+          <div class="week-card-body">
+            <div class="week-dates">
+              {{ formatDisplayDate(week.startDate) }} - {{ formatDisplayDate(week.endDate) }}
+            </div>
+            
+            <div class="week-info">
+              <div *ngIf="!week.isAvailable" class="text-danger small">
+                <i class="fas fa-exclamation-triangle me-1"></i>
+                {{ week.reason }}
+              </div>
+              <div *ngIf="week.isAvailable" class="text-success small">
+                <i class="fas fa-check-circle me-1"></i> Свободно для отпуска
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="close.emit()">Отмена</button>
+      <button type="button" class="btn btn-primary" (click)="close.emit()" *ngIf="!isLoadingWeeks">
+        <i class="fas fa-check me-2"></i>Подтвердить выбор
+      </button>
+    </div>
+  </div>
+</div>

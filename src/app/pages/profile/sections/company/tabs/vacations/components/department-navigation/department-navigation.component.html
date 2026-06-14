@@ -1,0 +1,11 @@
+<div class="department-navigation">
+  <div class="nav-tabs">
+    <button *ngFor="let dept of departments" class="nav-tab" 
+            [class.active]="activeDepartment === dept.name"
+            (click)="setActiveDepartment.emit(dept.name)">
+      <i class="fas fa-{{ dept.icon }} me-2"></i>
+      {{ dept.name }}
+      <span class="badge" [style.background-color]="dept.color">{{ dept.vacations.length }}</span>
+    </button>
+  </div>
+</div>

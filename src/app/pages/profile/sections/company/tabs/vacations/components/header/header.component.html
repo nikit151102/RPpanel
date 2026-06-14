@@ -1,0 +1,44 @@
+<div class="management-header">
+  <div class="header-left">
+    <h1>
+      <i class="fas fa-sun me-2"></i>
+      Управление отпусками
+    </h1>
+    <div class="user-info">
+      <span class="badge bg-primary">{{ currentUser?.position }}</span>
+      <span class="badge bg-secondary ms-2" *ngIf="managedStoreName">
+        <i class="fas fa-store me-1"></i>{{ managedStoreName }}
+      </span>
+    </div>
+  </div>
+
+  <div class="header-right">
+    <!-- Быстрые действия -->
+    <div class="btn-group me-2">
+      <button class="btn btn-primary" (click)="openCreateVacationModal.emit()">
+        <i class="fas fa-plus me-2"></i>Мой отпуск
+      </button>
+      <button class="btn btn-success" (click)="openCreateForUserModal.emit()"
+        *ngIf="isDirector || isDeputyDirector || isStoreManager">
+        <i class="fas fa-user-plus me-2"></i>Отпуск сотруднику
+      </button>
+    </div>
+
+    <!-- Выбор магазина для менеджера -->
+    <button class="btn btn-outline-primary me-2" *ngIf="isStoreManager && userStores.length > 1" 
+            (click)="openStoreSelectorForManager.emit()">
+      <i class="fas fa-store me-2"></i>Сменить магазин
+    </button>
+
+    <!-- Очередь на утверждение -->
+    <button class="btn btn-warning me-2" *ngIf="approvalQueue.length > 0" 
+            [routerLink]="['/vacations', 'approval-queue']"
+            [queryParams]="{back: 'management'}">
+      <i class="fas fa-clock me-2"></i>На утверждение ({{ approvalQueue.length }})
+    </button>
+
+    <button class="btn btn-outline-secondary" (click)="refreshData.emit()" [disabled]="isLoading">
+      <i class="fas fa-sync-alt me-2" [class.fa-spin]="isLoading"></i>Обновить
+    </button>
+  </div>
+</div>

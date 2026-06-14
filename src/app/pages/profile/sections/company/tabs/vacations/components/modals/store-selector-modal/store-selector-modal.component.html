@@ -1,0 +1,33 @@
+<div class="modal-overlay show">
+  <div class="modal-container">
+    <div class="modal-header bg-primary text-white">
+      <h3><i class="fas fa-store me-2"></i>Выбор магазина</h3>
+      <button class="close-btn text-white" (click)="close.emit()">×</button>
+    </div>
+    
+    <form [formGroup]="managerStoreSelectorForm" (ngSubmit)="selectStore.emit()">
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Выберите магазин для управления:</label>
+          <select class="form-select" formControlName="store_id">
+            <option *ngFor="let store of userStores" [value]="store.store_id">
+              Магазин {{ store.store_id }} {{ store.is_manager ? '(менеджер)' : '' }}
+            </option>
+          </select>
+        </div>
+        
+        <div class="alert alert-info">
+          <i class="fas fa-info-circle me-2"></i>
+          Вы будете видеть отпуски только сотрудников выбранного магазина
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="close.emit()">Отмена</button>
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-check me-2"></i>Выбрать
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

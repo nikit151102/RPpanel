@@ -1,0 +1,296 @@
+<div class="calendar-view">
+  <!-- Заголовок календаря с градиентом -->
+  <div class="calendar-header glass-effect">
+    <div class="header-content">
+      <div class="header-left">
+        <div class="calendar-icon-wrapper">
+          <i class="fas fa-calendar-alt"></i>
+        </div>
+        <div class="header-text">
+          <h2 class="calendar-title">Календарь отпусков</h2>
+          <p class="calendar-subtitle">{{ calendar.monthName }} {{ calendar.year }}</p>
+        </div>
+      </div>
+      
+      <div class="header-right">
+        <!-- Быстрая навигация -->
+        <div class="quick-nav">
+          <button class="nav-btn today-btn" (click)="goToToday()">
+            <i class="fas fa-calendar-day"></i>
+            <span>Сегодня</span>
+          </button>
+        </div>
+        
+        <!-- Управление месяцем -->
+        <div class="month-controls">
+          <button class="control-btn prev-btn" (click)="prevMonth()" title="Предыдущий месяц">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          
+          <div class="current-month">
+            <span class="month-name">{{ calendar.monthName }}</span>
+            <span class="year">{{ calendar.year }}</span>
+          </div>
+          
+          <button class="control-btn next-btn" (click)="nextMonth()" title="Следующий месяц">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+        
+        <!-- Переключение вида -->
+        <div class="view-toggle">
+          <button class="view-btn" [class.active]="viewMode === 'month'" (click)="viewMode = 'month'">
+            <i class="fas fa-calendar"></i>
+            <span>Месяц</span>
+          </button>
+          <button class="view-btn" [class.active]="viewMode === 'week'" (click)="viewMode = 'week'">
+            <i class="fas fa-calendar-week"></i>
+            <span>Неделя</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Прогресс месяца -->
+    <div class="month-progress">
+      <div class="progress-bar">
+        <div class="progress-fill" [style.width]="getMonthProgress() + '%'"></div>
+      </div>
+      <div class="progress-text">
+        <span>{{ getCurrentDayOfMonth() }} из {{ getDaysInMonth() }} дней</span>
+        <span class="progress-percent">{{ getMonthProgress() | number:'1.0-0' }}%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Календарная сетка -->
+  <div class="calendar-container">
+    <!-- Дни недели -->
+    <div class="weekdays-header">
+      <div *ngFor="let day of daysOfWeek" class="weekday" [class.weekend]="day === 'Сб' || day === 'Вс'">
+        <span class="weekday-short">{{ day }}</span>
+        <span class="weekday-full">{{ getFullDayName(day) }}</span>
+      </div>
+    </div>
+
+    <!-- Ячейки календаря -->
+    <div class="calendar-grid">
+      <ng-container *ngFor="let week of calendar.weeks; let weekIndex = index">
+        <div *ngFor="let day of week.days; let dayIndex = index" 
+             class="calendar-cell"
+             [class.today]="day.isToday"
+             [class.weekend]="day.isWeekend"
+             [class.other-month]="day.isOtherMonth"
+             [class.has-vacations]="day.vacationCount > 0"
+             [class.many-vacations]="day.vacationCount > 3"
+             [style.grid-column]="dayIndex + 1"
+             [style.grid-row]="weekIndex + 2"
+             (click)="openDayDetails.emit(day)">
+          
+          <!-- Номер дня -->
+          <div class="day-number-container">
+            <span class="day-number" [class.current-month]="!day.isOtherMonth">
+              {{ day.dayNumber }}
+            </span>
+            <span class="day-marker" *ngIf="day.isToday"></span>
+          </div>
+
+          <!-- Отпуски в этот день -->
+          <div class="vacations-container" *ngIf="day.vacations.length > 0">
+            <!-- Первые 3 отпуска -->
+            <div *ngFor="let vacation of day.vacations.slice(0, 3); let i = index" 
+                 class="vacation-chip"
+                 [class]="getVacationStatusClass(vacation.status)"
+                 [style.transform]="'translateY(' + (i * 8) + 'px)'"
+                 (click)="$event.stopPropagation(); openApproveModal.emit(vacation)"
+                 [title]="getVacationTooltip(vacation)">
+              <div class="chip-avatar">
+                {{ vacation.user?.first_name?.charAt(0) }}{{ vacation.user?.last_name?.charAt(0) }}
+              </div>
+              <div class="chip-info">
+                <span class="chip-name">{{ vacation.user?.first_name?.charAt(0) }}.{{ vacation.user?.last_name?.charAt(0) }}</span>
+                <span class="chip-status">{{ getStatusLabel(vacation.status) }}</span>
+              </div>
+            </div>
+
+            <!-- Показать больше -->
+            <div *ngIf="day.vacations.length > 3" 
+                 class="more-vacations"
+                 (click)="$event.stopPropagation(); openDayDetails.emit(day)">
+              <span class="more-count">+{{ day.vacations.length - 3 }}</span>
+              <span class="more-text">ещё</span>
+            </div>
+          </div>
+
+          <!-- Индикатор количества отпусков -->
+          <div *ngIf="day.vacationCount > 0" class="vacation-indicator">
+            <span class="indicator-count">{{ day.vacationCount }}</span>
+            <i class="fas fa-sun indicator-icon"></i>
+          </div>
+
+          <!-- Подсказка при наведении -->
+          <div class="day-tooltip" *ngIf="day.isToday">
+            Сегодня
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- Легенда и статистика -->
+  <div class="calendar-footer">
+    <!-- Легенда статусов -->
+    <div class="legend-section glass-effect">
+      <h4 class="legend-title">
+        <i class="fas fa-key"></i>
+        Легенда статусов
+      </h4>
+      <div class="legend-grid">
+        <div class="legend-item" *ngFor="let status of getVacationStatuses()">
+          <div class="legend-color" [style.background]="getStatusColor(status.value)"></div>
+          <span class="legend-label">{{ status.label }}</span>
+          <span class="legend-count">{{ getVacationsByStatus(status.value).length }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Статистика месяца -->
+    <div class="stats-section glass-effect">
+      <h4 class="stats-title">
+        <i class="fas fa-chart-bar"></i>
+        Статистика {{ calendar.monthName }}
+      </h4>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon total">
+            <i class="fas fa-users"></i>
+          </div>
+          <div class="stat-content">
+            <h3 class="stat-value">{{ getVacationsInMonth().length }}</h3>
+            <p class="stat-label">Всего отпусков</p>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon active">
+            <i class="fas fa-sun"></i>
+          </div>
+          <div class="stat-content">
+            <h3 class="stat-value">{{ getActiveVacationsCount() }}</h3>
+            <p class="stat-label">Активных сейчас</p>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon upcoming">
+            <i class="fas fa-calendar-plus"></i>
+          </div>
+          <div class="stat-content">
+            <h3 class="stat-value">{{ getUpcomingVacationsCount() }}</h3>
+            <p class="stat-label">Запланировано</p>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon busy">
+            <i class="fas fa-calendar-times"></i>
+          </div>
+          <div class="stat-content">
+            <h3 class="stat-value">{{ getBusiestDay()?.vacationCount || 0 }}</h3>
+            <p class="stat-label">Макс. в день</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Быстрые действия -->
+    <div class="actions-section glass-effect">
+      <h4 class="actions-title">
+        <i class="fas fa-bolt"></i>
+        Быстрые действия
+      </h4>
+      <div class="actions-grid">
+        <button class="action-btn primary" (click)="scrollToToday()">
+          <i class="fas fa-crosshairs"></i>
+          <span>К сегодня</span>
+        </button>
+        <button class="action-btn secondary" (click)="exportCalendar()">
+          <i class="fas fa-download"></i>
+          <span>Экспорт</span>
+        </button>
+        <button class="action-btn success" (click)="printCalendar()">
+          <i class="fas fa-print"></i>
+          <span>Печать</span>
+        </button>
+        <button class="action-btn info" (click)="toggleWeekends()">
+          <i class="fas fa-eye"></i>
+          <span>{{ showWeekends ? 'Скрыть' : 'Показать' }} выходные</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Информационная панель -->
+  <div class="info-panel" *ngIf="selectedDayInfo">
+    <div class="info-header">
+      <h4>
+        <i class="fas fa-calendar-day"></i>
+        {{ selectedDayInfo.date | date:'dd MMMM yyyy' }}
+      </h4>
+      <button class="close-info" (click)="selectedDayInfo = null">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="info-content">
+      <div class="day-stats">
+        <div class="day-stat">
+          <span class="stat-icon">
+            <i class="fas fa-sun"></i>
+          </span>
+          <span class="stat-value">{{ selectedDayInfo.vacationCount }}</span>
+          <span class="stat-label">отпусков</span>
+        </div>
+        <div class="day-stat">
+          <span class="stat-icon">
+            <i class="fas fa-user-check"></i>
+          </span>
+          <span class="stat-value">{{ getApprovedCount(selectedDayInfo) }}</span>
+          <span class="stat-label">утверждено</span>
+        </div>
+        <div class="day-stat">
+          <span class="stat-icon">
+            <i class="fas fa-clock"></i>
+          </span>
+          <span class="stat-value">{{ getPendingCount(selectedDayInfo) }}</span>
+          <span class="stat-label">на согласовании</span>
+        </div>
+      </div>
+      <div class="day-vacations">
+        <h5>Отпуски в этот день:</h5>
+        <div *ngFor="let vacation of selectedDayInfo.vacations" 
+             class="vacation-card"
+             [class]="getVacationStatusClass(vacation.status)">
+          <div class="vacation-avatar">
+            {{ vacation.user?.first_name?.charAt(0) }}{{ vacation.user?.last_name?.charAt(0) }}
+          </div>
+          <div class="vacation-info">
+            <h6>{{ vacation.user?.first_name }} {{ vacation.user?.last_name }}</h6>
+            <p class="vacation-period">
+              {{ formatDisplayDate(vacation.start_date) }} - {{ formatDisplayDate(vacation.end_date) }}
+              ({{ vacation.total_days }} дней)
+            </p>
+            <div class="vacation-meta">
+              <span class="vacation-type">{{ getTypeLabel(vacation.vacation_type) }}</span>
+              <span class="vacation-status">{{ getStatusLabel(vacation.status) }}</span>
+            </div>
+          </div>
+          <div class="vacation-actions" *ngIf="vacation.status === VacationStatus.PENDING && canApproveVacation(vacation)">
+            <button class="action-btn approve" (click)="openApproveModal.emit(vacation)">
+              <i class="fas fa-check"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

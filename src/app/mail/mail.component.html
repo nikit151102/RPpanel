@@ -1,0 +1,182 @@
+<div class="container">
+
+    <div class="content">
+        <div style="flex: 1;">
+            <div id="forms">
+                <h2>Управление электронной почтой</h2>
+
+                <div style="border: 1px solid #d4d4d4;
+                border-radius: 15px;
+                padding: 10px; margin-bottom: 20px;">
+                    <span>
+                        Добавить новую почту
+                    </span>
+
+                    <div class="email-form">
+                        <input [(ngModel)]="newEmail" type="text" placeholder="Введите email" class="input-field" />
+                        <button (click)="createEmail()" class="btn btn-create">Создать почту</button>
+                    </div>
+
+                    <div class="container">
+                        <div class="file-upload">
+                            <label class="file-input-label">
+                                Выберите файл
+                                <input type="file" (change)="onFileSelected($event)" />
+                            </label>
+                            <button (click)="uploadFile()" class="btn btn-upload">Загрузить файл</button>
+                        </div>
+                        <div *ngIf="selectedFileName && !displayDialog" class="file-selected">
+                            Выбран файл: <strong>{{ selectedFileName }}</strong>
+                            <a (click)="onRemoveFile()" class="btn btn-remove" style="color: red;">
+                                Удалить файл
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button (click)="openStandardMessageDialog()" class="btn btn-send-message">Отправить рассылку
+                        сообщений</button>
+                </div>
+
+            </div>
+        </div>
+        <div>
+            <p>
+                Общее количество электронных ящиков: {{totalEmails}}
+            </p>
+            <table style="flex: 1;" class="email-table" infiniteScroll [infiniteScrollDistance]="scrollDistance"
+                [infiniteScrollDisabled]="isLoading" [infiniteScrollDisabled]="isLoading" (scrolled)="onScroll()">
+                <thead style=" top: 55px; position: sticky;">
+                    <tr>
+                        <th (click)="sortEmailsByDate()">
+                            Дата
+                            <span *ngIf="isAscending">↑</span>
+                            <span *ngIf="!isAscending">↓</span>
+                        </th>
+                        <th>Почта</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let email of emails">
+                        <td>{{email.date | date : "dd-MM-YYYY" }}</td>
+                        <td>{{ email.email }}</td>
+                        <td>
+                            <button (click)="deleteEmail(email.id)" class="btn btn-delete">Удалить</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <div class="dialog" *ngIf="displayDialog && editMail">
+        <div class="dialog-content">
+            <h3>{{ isEditMode ? 'Редактировать Email' : 'Создать Email' }}</h3>
+            <div>
+                <input [(ngModel)]="editedEmail" type="text" placeholder="Email" class="input-field" />
+            </div>
+            <div class="dialog-footer">
+                <button (click)="closeDialog()" class="btn btn-cancel">Отмена</button>
+                <button (click)="editEmail()" class="btn btn-save">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="dialog" *ngIf="displayDialog && !isCustomMessageDialog  && !editMail">
+        <div class="dialog-content">
+            <h3>Отправить рассылку сообщений</h3>
+            <form [formGroup]="standardMessageForm" (ngSubmit)="sendStandardMessage()">
+                <div>
+                    <label for="subject">Тема</label>
+                    <input id="subject" formControlName="subject" type="text" placeholder="Тема сообщения" />
+                </div>
+                <div>
+                    <label for="message">Сообщение</label>
+                    <textarea id="message" formControlName="message" placeholder="Текст сообщения"></textarea>
+                </div>
+                <div style=" margin-bottom: 9px;">
+                    <div class="file-upload" style="align-items: flex-start">
+                        <label class="file-input-label">
+                            Выберите файл
+                            <input type="file" (change)="onFileSelected($event)" />
+                        </label>
+                    </div>
+                    <div *ngIf="selectedFileName" class="file-selected">
+                        Выбран файл: <strong>{{ selectedFileName }}</strong>
+                        <a (click)="onRemoveFile()" class="btn btn-remove"
+                            style="color: red; box-shadow: none; background: none;">
+                            Удалить файл
+                        </a>
+                    </div>
+                </div>
+                <div>
+                    <label for="min_interval">Интервал от (секунды)</label>
+                    <input id="min_interval" formControlName="min_interval" type="number"
+                        placeholder="Интервал в секундах" />
+                </div>
+                <div>
+                    <label for="max_interval">Интервал до (секунды)</label>
+                    <input id="max_interval" formControlName="max_interval" type="number"
+                        placeholder="Интервал в секундах" />
+                </div>
+                <div>
+                    <label for="emailsPerPage">Количество отправляемых писем за раз</label>
+                    <input id="emailsPerPage" formControlName="emailsPerPage" type="number"
+                        placeholder="Количество писем" />
+                </div>
+                <div class="dialog-footer">
+                    <button type="button" (click)="closeDialog()" class="btn btn-cancel">Отмена</button>
+                    <button type="submit" class="btn btn-save">Отправить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="dialog" *ngIf="displayDialog && isCustomMessageDialog">
+        <div class="dialog-content">
+            <h3>Отправить пользователю сообщение</h3>
+
+            <form [formGroup]="customMessageForm" (ngSubmit)="sendCustomMessage()">
+                <div>
+                    <label for="email">Email получателя</label>
+                    <input id="email" formControlName="email" type="email" placeholder="Email получателя" />
+                </div>
+
+                <div>
+                    <label for="subject">Тема</label>
+                    <input id="subject" formControlName="subject" type="text" placeholder="Тема сообщения" />
+                </div>
+
+                <div>
+                    <label for="message">Сообщение</label>
+                    <textarea id="message" formControlName="message" placeholder="Текст сообщения"></textarea>
+                </div>
+
+                <div style="    margin-bottom: 9px;">
+                    <div class="file-upload" style="align-items: flex-start">
+                        <label class="file-input-label">
+                            Выберите файл
+                            <input type="file" (change)="onFileSelected($event)" />
+                        </label>
+                        <button (click)="uploadFile()" class="btn btn-upload">Загрузить файл</button>
+                    </div>
+                    <div *ngIf="selectedFileName" class="file-selected">
+                        Выбран файл: <strong>{{ selectedFileName }}</strong>
+                        <a (click)="onRemoveFile()" class="btn btn-remove"
+                            style="color: red; box-shadow: none; background: none;">
+                            Удалить файл
+                        </a>
+                    </div>
+                </div>
+
+                <div class="dialog-footer">
+                    <button type="button" (click)="closeDialog()" class="btn btn-cancel">Отмена</button>
+                    <button type="submit" class="btn btn-save">Отправить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>

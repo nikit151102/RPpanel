@@ -1,0 +1,18 @@
+<!-- drivers.component.html -->
+<div class="drivers-layout">
+
+  <app-vertical-menu-tabs [currentRoute]="'managers'"></app-vertical-menu-tabs>
+  <!-- Основной контент -->
+  <main class="main-content" [class.expanded]="isSidebarCollapsed">
+    <!-- Кнопка для показа меню в свернутом состоянии -->
+    <button class="floating-menu-toggle" *ngIf="isSidebarCollapsed" (click)="toggleSidebar()" title="Показать меню">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </svg>
+    </button>
+
+    <div class="content-wrapper">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+</div>

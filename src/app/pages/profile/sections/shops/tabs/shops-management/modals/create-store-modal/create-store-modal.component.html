@@ -1,0 +1,145 @@
+<div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2 class="modal-title">🏪 Создать новый магазин</h2>
+            <button class="close-button" (click)="closeModal()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" />
+                </svg>
+            </button>
+        </div>
+
+        <form class="modal-form" (ngSubmit)="onSubmit()">
+            <div class="form-section">
+                <h3>📋 Основная информация</h3>
+
+                <div class="input-group">
+                    <label class="input-label">
+                        <span class="label-text">Название магазина *</span>
+                        <input type="text" class="modern-input" [(ngModel)]="storeData.name1C" name="name1C" required
+                            placeholder="Введите название магазина">
+                    </label>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">
+                        <span class="label-text">Код магазина *</span>
+                        <input type="text" class="modern-input" [(ngModel)]="storeData.code" name="code" required
+                            placeholder="Уникальный код магазина">
+                    </label>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">
+                        <span class="label-text">UUID 1C</span>
+                        <input type="text" class="modern-input" [(ngModel)]="storeData.uuid1C" name="uuid1C"
+                            placeholder="Идентификатор из 1С">
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>📍 Адрес магазина</h3>
+
+                <div class="address-grid">
+                    <div class="input-group">
+                        <label class="input-label">
+                            <span class="label-text">Страна</span>
+                            <input type="text" class="modern-input" [(ngModel)]="storeData.address.country"
+                                name="country" placeholder="Россия">
+                        </label>
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label">
+                            <span class="label-text">Регион</span>
+                            <input type="text" class="modern-input" [(ngModel)]="storeData.address.region" name="region"
+                                placeholder="Московская область">
+                        </label>
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label">
+                            <span class="label-text">Город *</span>
+                            <input type="text" class="modern-input" [(ngModel)]="storeData.address.city" name="city"
+                                required placeholder="Москва">
+                        </label>
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label">
+                            <span class="label-text">Улица *</span>
+                            <input type="text" class="modern-input" [(ngModel)]="storeData.address.street" name="street"
+                                required placeholder="Ленина">
+                        </label>
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label">
+                            <span class="label-text">Дом *</span>
+                            <input type="text" class="modern-input" [(ngModel)]="storeData.address.house" name="house"
+                                required placeholder="1">
+                        </label>
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label">
+                            <span class="label-text">Корпус</span>
+                            <input type="text" class="modern-input" [(ngModel)]="storeData.address.housing"
+                                name="housing" placeholder="А">
+                        </label>
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label">
+                            <span class="label-text">Офис/Помещение</span>
+                            <input type="text" class="modern-input" [(ngModel)]="storeData.address.office" name="office"
+                                placeholder="Помещение 1">
+                        </label>
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label">
+                            <span class="label-text">Почтовый индекс</span>
+                            <input type="text" class="modern-input" [(ngModel)]="storeData.address.postIndex"
+                                name="postIndex" placeholder="101000">
+                        </label>
+                    </div>
+                </div>
+
+                <div class="input-row">
+                    <div class="input-group">
+                        <label class="input-label">
+                            <span class="label-text">Широта</span>
+                            <input type="number" step="any" class="modern-input"
+                                [(ngModel)]="storeData.address.latitude" name="latitude" placeholder="55.7558">
+                        </label>
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label">
+                            <span class="label-text">Долгота</span>
+                            <input type="number" step="any" class="modern-input"
+                                [(ngModel)]="storeData.address.longitude" name="longitude" placeholder="37.6173">
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="secondary-btn" (click)="closeModal()">Отмена</button>
+                <button type="submit" class="primary-btn" [disabled]="!isFormValid() || isLoading">
+                    <span *ngIf="!isLoading">🚀 Создать магазин</span>
+                    <span *ngIf="isLoading" class="loading">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"
+                                opacity="0.3" />
+                            <path d="M12 2a10 10 0 0 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z" />
+                        </svg>
+                        Создание...
+                    </span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

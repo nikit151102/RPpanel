@@ -1,0 +1,75 @@
+@import '../modal-base.scss';
+
+.weeks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+
+  .week-card {
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover:not(.unavailable) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+      border-color: #06d6a0;
+    }
+
+    &.available {
+      border-color: #e0e0e0;
+
+      &:hover {
+        border-color: #06d6a0;
+      }
+    }
+
+    &.unavailable {
+      opacity: 0.7;
+      cursor: not-allowed;
+      background: #f8f9fa;
+    }
+
+    .week-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+
+      h6 {
+        margin: 0;
+        color: #2d3748;
+        font-size: 0.95rem;
+      }
+
+      .badge {
+        font-size: 0.7rem;
+        padding: 0.25em 0.75em;
+      }
+    }
+
+    .week-card-body {
+      .week-dates {
+        font-size: 0.9rem;
+        color: #2d3748;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+      }
+
+      .week-info {
+        font-size: 0.8rem;
+
+        .text-danger {
+          color: #ef476f !important;
+        }
+
+        .text-success {
+          color: #06d6a0 !important;
+        }
+      }
+    }
+  }
+}

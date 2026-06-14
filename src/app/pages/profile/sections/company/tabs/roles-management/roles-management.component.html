@@ -1,0 +1,572 @@
+<div class="auth-hub-modern">
+    <!-- Glass Morphism Navigation -->
+    <nav class="modern-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <div class="brand-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z" />
+                    </svg>
+                </div>
+                <span class="brand-text">Права доступа</span>
+            </div>
+
+            <div class="nav-tabs">
+                <button *ngFor="let tab of ['roles', 'actions', 'permissions', 'microfrontends', 'tabs']"
+                    [class.active]="activeTab === tab" (click)="selectTab(tab)" class="nav-tab">
+                    <span class="tab-icon">
+                        <ng-container [ngSwitch]="tab">
+                            <svg *ngSwitchCase="'roles'" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                            </svg>
+                            <svg *ngSwitchCase="'actions'" width="18" height="18" viewBox="0 0 24 24"
+                                fill="currentColor">
+                                <path
+                                    d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z" />
+                            </svg>
+                            <svg *ngSwitchCase="'permissions'" width="18" height="18" viewBox="0 0 24 24"
+                                fill="currentColor">
+                                <path
+                                    d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z" />
+                            </svg>
+                            <svg *ngSwitchCase="'microfrontends'" width="18" height="18" viewBox="0 0 24 24"
+                                fill="currentColor">
+                                <path
+                                    d="M20 18c1.1 0 1.99-.9 1.99-2L22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z" />
+                            </svg>
+                            <svg *ngSwitchCase="'tabs'" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h10v4h8v10z" />
+                            </svg>
+                        </ng-container>
+                    </span>
+                    <span class="tab-label">{{ getTabLabel(tab) }}</span>
+                    <div class="tab-indicator"></div>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <!-- Roles Section -->
+        <section *ngIf="activeTab === 'roles'" class="modern-section">
+            <div class="section-header">
+                <div class="header-content">
+                    <h1 class="section-title">
+                        <span class="title-icon">👑</span>
+                        Управление ролями
+                    </h1>
+                    <p class="section-subtitle">Создавайте и настраивайте роли пользователей системы</p>
+                </div>
+                <button class="create-btn" (click)="createRole()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                    </svg>
+                    Новая роль
+                </button>
+            </div>
+
+            <div class="dashboard-grid">
+                <!-- Create/Edit Form -->
+                <div class="form-panel glass-card">
+                    <div class="panel-header">
+                        <h3>{{ selectedRole ? '✏️ Редактировать роль' : '✨ Создать новую роль' }}</h3>
+                    </div>
+                    <form class="modern-form" (submit)="$event.preventDefault()">
+                        <div class="input-group">
+                            <label class="input-label">
+                                <span class="label-text">Название роли</span>
+                                <input type="text" class="modern-input" [(ngModel)]="newRole.name" name="roleName"
+                                    placeholder="Например: Администратор">
+                            </label>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">
+                                <span class="label-text">Описание</span>
+                                <textarea class="modern-textarea" [(ngModel)]="newRole.description"
+                                    name="roleDescription" placeholder="Опишите назначение этой роли..."></textarea>
+                            </label>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">
+                                <span class="label-text">Родительская роль</span>
+                                <select class="modern-select" [(ngModel)]="newRole.parent_role_id" name="parentRole">
+                                    <option value="">🎯 Без родительской роли</option>
+                                    <option *ngFor="let role of roles" [value]="role.id">🔹 {{ role.name }}</option>
+                                </select>
+                            </label>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="primary-btn"
+                                (click)="selectedRole ? updateRole() : createRole()" [disabled]="!newRole.name">
+                                {{ selectedRole ? '💾 Сохранить изменения' : '🚀 Создать роль' }}
+                            </button>
+                            <button *ngIf="selectedRole" type="button" class="secondary-btn"
+                                (click)="selectedRole = undefined">
+                                ↩️ Отмена
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Roles List -->
+                <div class="list-panel glass-card">
+                    <div class="panel-header">
+                        <h3>📋 Список ролей</h3>
+                        <span class="badge">{{ roles.length }}</span>
+                    </div>
+                    <div class="modern-list">
+                        <div *ngFor="let role of roles" class="list-item"
+                            [class.selected]="selectedRole?.id === role.id" (click)="selectItem(role, 'role')">
+                            <div class="item-avatar">
+                                <div class="avatar">👑</div>
+                            </div>
+                            <div class="item-content">
+                                <h4 class="item-title">{{ role.name }}</h4>
+                                <p class="item-description">{{ role.description || 'Без описания' }}</p>
+                                <div class="item-meta">
+                                    <span class="meta-tag" *ngIf="role.parent_role_id">🔗 Наследуемая</span>
+                                    <span class="meta-tag">🆔 {{ role.id.slice(0, 8) }}...</span>
+                                </div>
+                            </div>
+                            <div class="item-actions">
+                                <button class="action-btn danger"
+                                    (click)="$event.stopPropagation(); deleteRole(role.id)" title="Удалить роль">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                        <path
+                                            d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Permission Assignment -->
+                <div class="assignment-panel glass-card">
+                    <div class="panel-header">
+                        <h3>🔐 Назначение разрешений</h3>
+                    </div>
+                    <div class="assignment-content">
+                        <div class="input-group">
+                            <label class="input-label">
+                                <span class="label-text">Выберите разрешения для роли</span>
+                                <div class="permissions-grid">
+                                    <label *ngFor="let permission of permissions" class="permission-card">
+                                        <input type="checkbox" [value]="permission.id"
+                                            (change)="togglePermissionSelection(permission.id, $event)"
+                                            class="permission-checkbox">
+                                        <div class="permission-content">
+                                            <span class="permission-name">{{ permission.name }}</span>
+                                            <span class="permission-scope">{{ permission.scope }}</span>
+                                            <p class="permission-desc">{{ permission.description }}</p>
+                                        </div>
+                                    </label>
+                                </div>
+                            </label>
+                        </div>
+                        <button class="primary-btn full-width" (click)="assignPermissionToRole()"
+                            [disabled]="!selectedRole || selectedPermissionIds.length === 0">
+                            🔗 Назначить выбранные разрешения
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Actions Section -->
+        <section *ngIf="activeTab === 'actions'" class="modern-section">
+            <div class="section-header">
+                <div class="header-content">
+                    <h1 class="section-title">
+                        <span class="title-icon">⚡</span>
+                        Управление действиями
+                    </h1>
+                    <p class="section-subtitle">Определите действия, которые могут выполняться в системе</p>
+                </div>
+                <button class="create-btn" (click)="createAction()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                    </svg>
+                    Новое действие
+                </button>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="form-panel glass-card">
+                    <div class="panel-header">
+                        <h3>✨ Создать действие</h3>
+                    </div>
+                    <form class="modern-form" (submit)="$event.preventDefault(); createAction()">
+                        <div class="input-group">
+                            <label class="input-label">
+                                <span class="label-text">Название действия</span>
+                                <input type="text" class="modern-input" [(ngModel)]="newAction.name" name="actionName"
+                                    placeholder="Например: read_users, write_posts">
+                            </label>
+                        </div>
+                        <button type="submit" class="primary-btn" [disabled]="!newAction.name">
+                            ⚡ Создать действие
+                        </button>
+                    </form>
+                </div>
+
+                <div class="list-panel glass-card">
+                    <div class="panel-header">
+                        <h3>📜 Список действий</h3>
+                        <span class="badge">{{ actions.length }}</span>
+                    </div>
+                    <div class="modern-list">
+                        <div *ngFor="let action of actions" class="list-item">
+                            <div class="item-avatar">
+                                <div class="avatar">⚡</div>
+                            </div>
+                            <div class="item-content">
+                                <h4 class="item-title">{{ action.name }}</h4>
+                                <div class="item-meta">
+                                    <span class="meta-tag">🆔 {{ action.id.slice(0, 8) }}...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Permissions Section -->
+        <section *ngIf="activeTab === 'permissions'" class="modern-section">
+            <div class="section-header">
+                <div class="header-content">
+                    <h1 class="section-title">
+                        <span class="title-icon">🛡️</span>
+                        Управление разрешениями
+                    </h1>
+                    <p class="section-subtitle">Создавайте разрешения и связывайте их с действиями</p>
+                </div>
+                <button class="create-btn" (click)="createPermission()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                    </svg>
+                    Новое разрешение
+                </button>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="form-panel glass-card">
+                    <div class="panel-header">
+                        <h3>🔧 Создать разрешение</h3>
+                    </div>
+                    <form class="modern-form" (submit)="$event.preventDefault()">
+                        <div class="input-group">
+                            <label class="input-label">
+                                <span class="label-text">Название разрешения</span>
+                                <input type="text" class="modern-input" [(ngModel)]="newPermission.name"
+                                    name="permissionName" placeholder="Например: user_management">
+                            </label>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">
+                                <span class="label-text">Описание</span>
+                                <textarea class="modern-textarea" [(ngModel)]="newPermission.description"
+                                    name="permissionDescription"
+                                    placeholder="Опишите, что позволяет это разрешение..."></textarea>
+                            </label>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">
+                                <span class="label-text">Область действия</span>
+                                <input type="text" class="modern-input" [(ngModel)]="newPermission.scope"
+                                    name="permissionScope" placeholder="Например: global, tenant, user">
+                            </label>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">
+                                <span class="label-text">Связанные действия</span>
+                                <div class="actions-grid">
+                                    <label *ngFor="let action of actions" class="action-tag">
+                                        <input type="checkbox" [value]="action.id"
+                                            (change)="toggleActionSelection(action.id, $event)" class="action-checkbox">
+                                        <span class="tag-label">{{ action.name }}</span>
+                                    </label>
+                                </div>
+                            </label>
+                        </div>
+
+                        <button type="submit" class="primary-btn" (click)="createPermission()"
+                            [disabled]="!newPermission.name || !newPermission.scope">
+                            🛡️ Создать разрешение
+                        </button>
+                    </form>
+                </div>
+
+                <div class="list-panel glass-card">
+                    <div class="panel-header">
+                        <h3>📋 Список разрешений</h3>
+                        <span class="badge">{{ permissions.length }}</span>
+                    </div>
+                    <div class="modern-list">
+                        <div *ngFor="let permission of permissions" class="list-item">
+                            <div class="item-avatar">
+                                <div class="avatar">🛡️</div>
+                            </div>
+                            <div class="item-content">
+                                <h4 class="item-title">{{ permission.name }}</h4>
+                                <p class="item-description">{{ permission.description || 'Без описания' }}</p>
+                                <div class="item-meta">
+                                    <span class="meta-tag">🌍 {{ permission.scope }}</span>
+                                    <span class="meta-tag">⚡ {{ permission.action_ids.length }} действий</span>
+                                    <span class="meta-tag">🆔 {{ permission.id.slice(0, 8) }}...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Microfrontends Section -->
+        <section *ngIf="activeTab === 'microfrontends'" class="modern-section">
+            <div class="section-header">
+                <div class="header-content">
+                    <h1 class="section-title">
+                        <span class="title-icon">🧩</span>
+                        Управление микрофронтами
+                    </h1>
+                    <p class="section-subtitle">Настройте микрофронтенды и их доступность</p>
+                </div>
+                <button class="create-btn" (click)="createMicrofrontend()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                    </svg>
+                    Новый микрофронт
+                </button>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="form-panel glass-card">
+                    <div class="panel-header">
+                        <h3>🚀 Создать микрофронт</h3>
+                    </div>
+                    <form class="modern-form" (submit)="$event.preventDefault()">
+                        <div class="input-group">
+                            <label class="input-label">
+                                <span class="label-text">Название</span>
+                                <input type="text" class="modern-input" [(ngModel)]="newMicrofrontend.name"
+                                    name="mfName" placeholder="Например: User Management">
+                            </label>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">
+                                <span class="label-text">URL приложения</span>
+                                <input type="text" class="modern-input" [(ngModel)]="newMicrofrontend.url" name="mfUrl"
+                                    placeholder="https://example.com/microfrontend">
+                            </label>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">
+                                <span class="label-text">Маршрут</span>
+                                <input type="text" class="modern-input" [(ngModel)]="newMicrofrontend.route"
+                                    name="mfRoute" placeholder="/users">
+                            </label>
+                        </div>
+
+                        <div class="input-row">
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <span class="label-text">Приоритет</span>
+                                    <input type="number" class="modern-input" [(ngModel)]="newMicrofrontend.priority"
+                                        name="mfPriority" min="0" max="100">
+                                </label>
+                            </div>
+
+                            <div class="input-group">
+                                <label class="toggle-label">
+                                    <input type="checkbox" [(ngModel)]="newMicrofrontend.is_active" name="mfActive"
+                                        class="toggle-input">
+                                    <span class="toggle-slider"></span>
+                                    <span class="toggle-text">Активный</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="primary-btn" (click)="createMicrofrontend()"
+                            [disabled]="!newMicrofrontend.name || !newMicrofrontend.url">
+                            🧩 Создать микрофронт
+                        </button>
+                    </form>
+                </div>
+
+                <div class="list-panel glass-card">
+                    <div class="panel-header">
+                        <h3>📦 Микрофронты</h3>
+                        <span class="badge">{{ microfrontends.length }}</span>
+                    </div>
+                    <div class="modern-list">
+                        <div *ngFor="let mf of microfrontends" class="list-item"
+                            [class.selected]="selectedMicrofrontend?.id === mf.id"
+                            (click)="selectItem(mf, 'microfrontend')">
+                            <div class="item-avatar">
+                                <div class="avatar" [class.active]="mf.is_active">🧩</div>
+                            </div>
+                            <div class="item-content">
+                                <h4 class="item-title">{{ mf.name }}</h4>
+                                <p class="item-description">{{ mf.url }}</p>
+                                <div class="item-meta">
+                                    <span class="meta-tag">📍 {{ mf.route }}</span>
+                                    <span class="meta-tag">🎯 Приоритет: {{ mf.priority }}</span>
+                                    <span class="status-badge" [class.active]="mf.is_active">
+                                        {{ mf.is_active ? '✅ Активен' : '⏸️ Неактивен' }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tabs Section -->
+        <section *ngIf="activeTab === 'tabs'" class="modern-section">
+            <div class="section-header">
+                <div class="header-content">
+                    <h1 class="section-title">
+                        <span class="title-icon">📑</span>
+                        Управление вкладками
+                    </h1>
+                    <p class="section-subtitle">Создавайте и настраивайте вкладки для микрофронтов</p>
+                </div>
+                <button class="create-btn" (click)="createTab()" [disabled]="!selectedMicrofrontend">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                    </svg>
+                    Новая вкладка
+                </button>
+            </div>
+
+            <div class="dashboard-grid" *ngIf="selectedMicrofrontend">
+                <div class="form-panel glass-card">
+                    <div class="panel-header">
+                        <h3>📝 Создать вкладку для {{ selectedMicrofrontend.name }}</h3>
+                    </div>
+                    <form class="modern-form" (submit)="$event.preventDefault()">
+                        <div class="input-group">
+                            <label class="input-label">
+                                <span class="label-text">Название вкладки</span>
+                                <input type="text" class="modern-input" [(ngModel)]="newTab.name" name="tabName"
+                                    placeholder="Например: Профиль пользователя">
+                            </label>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">
+                                <span class="label-text">Маршрут</span>
+                                <input type="text" class="modern-input" [(ngModel)]="newTab.route" name="tabRoute"
+                                    placeholder="/users/profile">
+                            </label>
+                        </div>
+
+                        <div class="input-row">
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <span class="label-text">Порядок</span>
+                                    <input type="number" class="modern-input" [(ngModel)]="newTab.order" name="tabOrder"
+                                        min="0" placeholder="0">
+                                </label>
+                            </div>
+
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <span class="label-text">Родительская вкладка</span>
+                                    <select class="modern-select" [(ngModel)]="newTab.parent_id" name="tabParent">
+                                        <option value="">🏠 Без родительской вкладки</option>
+                                        <option *ngFor="let tab of tabs" [value]="tab.id">📁 {{ tab.name }}</option>
+                                    </select>
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="primary-btn" (click)="createTab()" [disabled]="!newTab.name">
+                            📑 Создать вкладку
+                        </button>
+                    </form>
+                </div>
+
+                <div class="list-panel glass-card">
+                    <div class="panel-header">
+                        <h3>📋 Вкладки микрофронта</h3>
+                        <span class="badge">{{ tabs.length }}</span>
+                    </div>
+                    <div class="modern-list">
+                        <div *ngFor="let tab of tabs" class="list-item" (click)="selectItem(tab, 'tab')">
+                            <div class="item-avatar">
+                                <div class="avatar" [class.active]="tab.is_active">📑</div>
+                            </div>
+                            <div class="item-content">
+                                <h4 class="item-title">{{ tab.name }}</h4>
+                                <p class="item-description">{{ tab.route || 'Без маршрута' }}</p>
+                                <div class="item-meta">
+                                    <span class="meta-tag">🔢 Порядок: {{ tab.order }}</span>
+                                    <span class="status-badge" [class.active]="tab.is_active">
+                                        {{ tab.is_active ? '✅ Активна' : '⏸️ Неактивна' }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="assignment-panel glass-card">
+                    <div class="panel-header">
+                        <h3>🔐 Назначение разрешений</h3>
+                    </div>
+                    <div class="assignment-content">
+                        <div class="input-group">
+                            <label class="input-label">
+                                <span class="label-text">Выберите разрешения для роли</span>
+                                <div class="permissions-grid">
+                                    <label *ngFor="let permission of permissions" class="permission-card">
+                                        <input type="checkbox" [value]="permission.id"
+                                            (change)="togglePermissionSelection(permission.id, $event)"
+                                            class="permission-checkbox">
+                                        <div class="permission-content">
+                                            <span class="permission-name">{{ permission.name }}</span>
+                                            <span class="permission-scope">{{ permission.scope }}</span>
+                                            <p class="permission-desc">{{ permission.description }}</p>
+                                        </div>
+                                    </label>
+                                </div>
+                            </label>
+                        </div>
+                        <button class="primary-btn full-width" (click)="assignPermissionToTabs()"
+                            [disabled]="!selectedTab || selectedPermissionIds.length === 0">
+                            🔗 Назначить выбранные разрешения
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div *ngIf="!selectedMicrofrontend" class="empty-state glass-card">
+                <div class="empty-content">
+                    <div class="empty-icon">🧩</div>
+                    <h3>Выберите микрофронт</h3>
+                    <p>Для управления вкладками сначала выберите микрофронт в соответствующем разделе</p>
+                    <button class="primary-btn" (click)="activeTab = 'microfrontends'">
+                        📦 Перейти к микрофронтам
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>

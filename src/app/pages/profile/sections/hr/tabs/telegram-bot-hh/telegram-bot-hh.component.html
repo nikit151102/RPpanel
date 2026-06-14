@@ -1,0 +1,175 @@
+<!-- telegram-bot-hh.component.html -->
+<div class="telegram-bot-container">
+    <!-- Header -->
+    <header class="bot-header">
+        <h1 class="title">HR Telegram Bot</h1>
+        <p class="subtitle">Управление тестами и кандидатами</p>
+    </header>
+
+    <!-- Tabs -->
+    <div class="tabs-container">
+        <div class="tabs-header">
+            <button class="tab-btn" [class.active]="activeTab === 0" (click)="activeTab = 0">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z" />
+                </svg>
+                Тесты
+            </button>
+            <button class="tab-btn" [class.active]="activeTab === 1" (click)="activeTab = 1">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                </svg>
+                Результаты
+            </button>
+            <button class="tab-btn" [class.active]="activeTab === 2" (click)="activeTab = 2">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+                </svg>
+                Собеседования
+            </button>
+            <button class="tab-btn" [class.active]="activeTab === 3" (click)="activeTab = 3">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zm4 18v-6h2.5l-2.54-7.63A2.01 2.01 0 0018.06 7h-.12a2 2 0 00-1.9 1.37l-.86 2.58c1.08.6 1.82 1.73 1.82 3.05v8h3zm-7.5-10.5c.28 0 .5.22.5.5s-.22.5-.5.5-.5-.22-.5-.5.22-.5.5-.5zm-5 0c.28 0 .5.22.5.5s-.22.5-.5.5-.5-.22-.5-.5.22-.5.5-.5zM9 12c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z" />
+                </svg>
+                Управляющие
+            </button>
+        </div>
+
+        <div class="tab-content">
+            <!-- Tests Tab -->
+            <div class="tab-panel" [class.active]="activeTab === 0">
+                <div class="panel-header">
+                    <h2 class="panel-title">Управление тестами</h2>
+                    <button class="create-btn" (click)="modalComponent.openForCreate()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                        </svg>
+                        Создать тест
+                    </button>
+                </div>
+
+                <div class="table-container">
+                    <table class="tests-table">
+                        <thead>
+                            <tr>
+                                <th>Название теста</th>
+                                <th>Описание</th>
+                                <th>Не подходит</th>
+                                <th>Рассмотреть</th>
+                                <th>Подходит</th>
+                                <th class="actions-column">Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let test of tests" class="test-row">
+                                <td class="name-cell">
+                                    <div class="name-value">{{ test.name }}</div>
+                                </td>
+                                <td class="description-cell">
+                                    <div class="description-value" [title]="test.description">
+                                        {{ test.description | truncate:80 }}
+                                    </div>
+                                </td>
+                                <td class="range-cell not-suitable">
+                                    <div class="range-value">от 0 до {{ test.candidate_not_suitable }}</div>
+                                </td>
+                                <td class="range-cell consider">
+                                    <div class="range-value">от {{ test.candidate_not_suitable }} до {{
+                                        test.candidate_consider }}</div>
+                                </td>
+                                <td class="range-cell suitable">
+                                    <div class="range-value">от {{ test.candidate_consider }} до {{
+                                        test.candidate_suitable }}</div>
+                                </td>
+                                <td class="actions-cell">
+                                    <div class="actions-container">
+                                        <button class="action-btn menu-btn" (click)="openMenu($event, test)"
+                                            title="Действия">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                                <path
+                                                    d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Empty State -->
+                            <tr *ngIf="tests.length === 0" class="empty-row">
+                                <td colspan="6">
+                                    <div class="empty-state">
+                                        <svg width="64" height="64" viewBox="0 0 24 24" fill="currentColor">
+                                            <path
+                                                d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z" />
+                                        </svg>
+                                        <h3>Тесты не найдены</h3>
+                                        <p>Создайте первый тест, нажав на кнопку выше</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Results Tab -->
+            <div class="tab-panel" [class.active]="activeTab === 1">
+                <app-hr-results></app-hr-results>
+            </div>
+
+            <!-- Meetings Tab -->
+            <div class="tab-panel" [class.active]="activeTab === 2">
+                <app-meetings></app-meetings>
+            </div>
+
+            <!-- Managers Tab -->
+            <div class="tab-panel" [class.active]="activeTab === 3">
+                <app-managers></app-managers>
+            </div>
+        </div>
+    </div>
+
+    <!-- Context Menu -->
+    <div class="context-menu" [class.visible]="contextMenu.visible" [style.left.px]="contextMenu.x"
+        [style.top.px]="contextMenu.y">
+        <div class="menu-item" (click)="editTest(contextMenu.test)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                    d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+            </svg>
+            Редактировать
+        </div>
+
+        <div class="menu-item" (click)="copyLink(contextMenu.test.id)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                    d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z" />
+            </svg>
+            Скопировать ссылку
+        </div>
+
+        <div class="menu-divider"></div>
+
+        <div class="menu-item delete" (click)="deleteTest(contextMenu.test.id)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+            </svg>
+            Удалить
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" [class.show]="showToast">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+        </svg>
+        Ссылка скопирована в буфер обмена!
+    </div>
+
+    <!-- Modal Component -->
+    <app-test-modal #modal (refresh)="loadTests()"></app-test-modal>
+</div>

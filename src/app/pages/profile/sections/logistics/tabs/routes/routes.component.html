@@ -1,0 +1,658 @@
+<!-- routes.component.html -->
+<div class="routes-container">
+  <!-- Заголовок и фильтры -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="title-section">
+        <h1 class="page-title">Маршруты</h1>
+        <p class="page-subtitle">Управление маршрутами водителей</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Карточка с фильтрами и таблицей -->
+  <div class="content-card">
+    <!-- Фильтры и действия -->
+    <div class="filters-section">
+      <div class="filters-row">
+        <div class="date-filters">
+          <div class="filter-group">
+            <label class="filter-label">Дата с</label>
+            <input type="date" class="date-input" [(ngModel)]="startDate" (change)="loadRoutes()">
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-label">Дата по</label>
+            <input type="date" class="date-input" [(ngModel)]="endDate" (change)="loadRoutes()">
+          </div>
+
+          <button class="filter-button" (click)="loadRoutes()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" stroke="currentColor" stroke-width="2" />
+            </svg>
+            Применить
+          </button>
+        </div>
+
+        <div class="actions-section">
+          <button class="action-button primary" (click)="openCreateDialog()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M12 5v14m-7-7h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+            Создать маршрут
+          </button>
+
+          <div class="file-upload-wrapper">
+            <input type="file" id="excelUpload" accept=".xlsx,.xls" (change)="onExcelAllDriversSelected($event)"
+              class="file-input">
+            <label for="excelUpload" class="file-upload-button">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4m14-7l-5 5m0 0l-5-5m5 5V3" stroke="currentColor"
+                  stroke-width="2" stroke-linecap="round" />
+              </svg>
+              Загрузить Excel
+            </label>
+          </div>
+
+          @if (uploadInProgress) {
+          <div class="upload-progress">
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="uploadProgress"></div>
+            </div>
+            <span class="progress-text">{{ uploadProgress }}%</span>
+          </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Таблица маршрутов -->
+    <div class="table-section">
+      @if (loading) {
+      <div class="loading-state">
+        <div class="loading-spinner"></div>
+        <span>Загрузка маршрутов...</span>
+      </div>
+      } @else {
+      <div class="table-container">
+        <table class="routes-table">
+          <thead>
+            <tr>
+              <th>Дата</th>
+              <th>ФИО водителя</th>
+              <th>Начало маршрута</th>
+              <th>Время работы (ч)</th>
+              <th>Окончание маршрута</th>
+              <th>Точек</th>
+              <th class="actions-header">Действия</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (route of routes; track route.id; let i = $index) {
+            <tr [class.even]="i % 2 === 0">
+              <td class="date-cell">{{ route.date | date:'dd.MM.yyyy' }}</td>
+              <td class="driver-cell">
+                <div class="driver-info">
+                  <div class="driver-avatar">
+                    {{ getDriverInitials(route.vehicle?.owner) }}
+                  </div>
+                  <span class="driver-name">
+                    {{ route.vehicle?.owner?.last_name }} {{ route.vehicle?.owner?.first_name }} {{
+                    route.vehicle?.owner?.middle_name }}
+                  </span>
+                </div>
+              </td>
+              <td>
+                <ng-container *ngIf="route.start_datetime; else startTimePicker">
+                  {{ route.start_datetime | date:'HH:mm':'UTC' }}
+                </ng-container>
+                <ng-template #startTimePicker>
+                  <div class="time-save-container">
+                    <input type="time" [ngModel]="getStartTime(i)" (ngModelChange)="setStartTime(i, $event)"
+                      class="time-input">
+                    <button *ngIf="getStartTime(i)" (click)="saveTimes(route, i, 'start')" class="save-btn">
+                      <svg class="save-btn__icon" viewBox="0 0 24 24" fill="none">
+                        <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                          stroke-linejoin="round" />
+                      </svg>
+                    </button>
+                  </div>
+                </ng-template>
+              </td>
+              <td>
+                {{route.work_hours}}
+              </td>
+              <td>
+                <ng-container *ngIf="route.end_datetime; else endTimePicker">
+                  {{ route.end_datetime | date:'HH:mm':'UTC' }}
+                </ng-container>
+                <ng-template #endTimePicker>
+                  <div class="time-save-container">
+                    <input type="time" [ngModel]="getEndTime(i)" (ngModelChange)="setEndTime(i, $event)"
+                      class="time-input">
+                    <button *ngIf="getEndTime(i)" (click)="saveTimes(route, i, 'end')" class="save-btn">
+                      <svg class="save-btn__icon" viewBox="0 0 24 24" fill="none">
+                        <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                          stroke-linejoin="round" />
+                      </svg>
+                    </button>
+                  </div>
+                </ng-template>
+              </td>
+              <td>
+                <span class="points-count">{{ route.points?.length || 0 }}</span>
+              </td>
+              <td class="actions-cell">
+                <div class="action-buttons">
+                  <button class="action-btn view" (click)="toggleExpand(route)" title="Просмотреть точки">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2" />
+                      <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
+                    </svg>
+                  </button>
+                  <button class="action-btn timeline" (click)="openTimeline(route)" title="Таймлайн">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                      <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" />
+                    </svg>
+                  </button>
+                  <button class="action-btn move" (click)="openRelocateDialog(route)" title="Переместить точки">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                      <path d="M3 12h18m-9-9l9 9-9 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                  </button>
+                  <button class="action-btn delete" (click)="deleteRoute(route)" title="Удалить маршрут">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                      <path d="M3 6h18m-2 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m4 0V4a2 2 0 012-2h4a2 2 0 012 2v2"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </button>
+                  
+                </div>
+              </td>
+            </tr>
+
+            <!-- Расширенная строка с точками маршрута -->
+            @if (expandedRoute && expandedRoute.id === route.id) {
+            <tr class="expanded-row">
+              <td colspan="6">
+                <div class="expanded-content">
+                  <div class="expanded-header">
+                    <h3>Точки маршрута</h3>
+                    <div class="expanded-actions">
+                      <div class="file-upload-wrapper small">
+                        <input type="file" [id]="'excelDriver_' + route.id" accept=".xlsx"
+                          (change)="uploadExcelForDriver($event, route.vehicle?.owner_id, route.date)"
+                          class="file-input">
+                        <label [for]="'excelDriver_' + route.id" class="file-upload-button small">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4m14-7l-5 5m0 0l-5-5m5 5V3"
+                              stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                          </svg>
+                          Загрузить Excel
+                        </label>
+                      </div>
+                      <button class="add-loading-btn" (click)="openAddUnloadingDialog(route)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                          <path d="M12 5v14m-7-7h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                        Добавить разгрузку
+                      </button>
+                      <button class="add-loading-btn" (click)="openAddLoadingDialog(route)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                          <path d="M12 5v14m-7-7h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                        Добавить погрузку
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Таблица точек -->
+                  <div class="points-table-container">
+                    <table class="points-table">
+                      <thead>
+                        <tr>
+                          <th class="checkbox-col">
+                            <input type="checkbox" [checked]="areAllPointsSelected()"
+                              (change)="toggleAllPointsSelection()">
+                          </th>
+                          <th>Тип</th>
+                          <th>Документ</th>
+                          <th>Контрагент / Место</th>
+                          <th>Оплата</th>
+                          <th>Адрес</th>
+                          <th class="actions-header">Действия</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (point of expandedRoute.combinedPoints; track point.id; let i = $index) {
+                        <tr [class.even]="i % 2 === 0">
+                          <td class="checkbox-col">
+                            <input type="checkbox" [checked]="isPointSelected(point)"
+                              (change)="onPointCheckboxChange($event, point)">
+                          </td>
+                          <td>
+                            <span class="point-type" [class.loading]="point.type === 'loading'"
+                              [class.unloading]="point.type === 'point'">
+                              {{ point.type === 'loading' ? 'Погрузка' : 'Разгрузка' }}
+                            </span>
+                          </td>
+                          <td>{{ point.doc || point.doc_number || '-' }}</td>
+                          <td>{{ point.counterparty || point.loading_place?.name || '-' }}</td>
+                          <td>{{ point.payment || '-' }}</td>
+                          <td>
+                            {{
+                            point.address?.address_1c?.address_1c
+                            || point.address?.address_1c
+                            || point.loading_place?.address?.address_1c
+                            || point.address
+                            || '-'
+                            }}
+                          </td>
+                          <td class="actions-cell">
+                            <button class="action-btn delete" (click)="confirmDeletePoint(point, route)"
+                              title="Удалить">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                                <path
+                                  d="M3 6h18m-2 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"
+                                  stroke="currentColor" stroke-width="2" />
+                              </svg>
+                            </button>
+                          </td>
+                        </tr>
+                        }
+                        @empty {
+                        <tr>
+                          <td colspan="7" class="empty-points">
+                            <div class="empty-state">
+                              <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor"
+                                  stroke-width="2" />
+                              </svg>
+                              <p>Нет точек маршрута</p>
+                            </div>
+                          </td>
+                        </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+
+                  @if (selectedPoints.length > 0) {
+                  <div class="selected-points-info">
+                    <span>Выбрано точек: {{ selectedPoints.length }}</span>
+                  </div>
+                  }
+                </div>
+              </td>
+            </tr>
+            }
+            }
+            @empty {
+            <tr>
+              <td colspan="6" class="empty-state">
+                <div class="empty-content">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 2C13.1 2 14 2.9 14 4s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm9 7h-6v13h-2v-6h-2v6H9V9H3V7h18v2z"
+                      stroke="currentColor" stroke-width="2" />
+                  </svg>
+                  <h3>Нет маршрутов</h3>
+                  <p>Создайте первый маршрут или измените параметры фильтра</p>
+                </div>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- Модальное окно таймлайна -->
+@if (timelineDialogVisible) {
+<div class="modal-overlay" (click)="closeTimeline()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 class="modal-title">Таймлайн маршрута</h2>
+      <button class="close-button" (click)="closeTimeline()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-content">
+      @if (groupedTimeline.length) {
+      <div class="timeline-wrapper">
+        @for (group of groupedTimeline; track group.name) {
+        <div class="timeline-group">
+          <div class="timeline-point">
+            <span class="point-icon">📍</span>
+            <span class="point-name">{{ group.name }}</span>
+          </div>
+
+          <ul class="timeline-list">
+            @for (item of group.events; track item.timestamp) {
+            <li class="timeline-item">
+              <div class="timeline-row">
+                <div class="timeline-time">
+                  {{ item.timestamp | date:'HH:mm:ss' }}
+                </div>
+                <div class="timeline-status" [class]="getStatusClass(item.status)">
+                  {{ getStatusLabel(item.status) }}
+                </div>
+                @if (item.duration) {
+                <div class="timeline-duration">
+                  ⏱ {{ item.duration }}
+                </div>
+                }
+              </div>
+            </li>
+            }
+          </ul>
+        </div>
+        }
+      </div>
+      } @else {
+      <div class="no-data">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+          <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" />
+        </svg>
+        <p>Нет данных для отображения</p>
+      </div>
+      }
+    </div>
+  </div>
+</div>
+}
+
+<!-- Модальное окно перемещения точек -->
+@if (relocateDialogVisible) {
+<div class="modal-overlay" (click)="relocateDialogVisible = false">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 class="modal-title">Переместить выбранные точки</h2>
+      <button class="close-button" (click)="relocateDialogVisible = false">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+      </button>
+    </div>
+
+    <form class="modal-form" (ngSubmit)="relocatePoints()">
+      <div class="form-group">
+        <label class="form-label">Целевой маршрут</label>
+        <select class="form-select" [(ngModel)]="relocateTargetRouteId" name="targetRoute">
+          <option value="">Выберите маршрут</option>
+          @for (route of routeListForSelect(); track route.value) {
+          <option [value]="route.value">{{ route.label }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="selected-info">
+        <span>Выбрано точек: {{ selectedPoints.length }}</span>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" (click)="relocateDialogVisible = false">
+          Отмена
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="!selectedPoints.length || !relocateTargetRouteId">
+          Переместить
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+}
+
+<!-- Модальное окно создания маршрута -->
+@if (createDialogVisible) {
+<div class="modal-overlay" (click)="createDialogVisible = false">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 class="modal-title">Создать маршрут</h2>
+      <button class="close-button" (click)="createDialogVisible = false">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+      </button>
+    </div>
+
+    <form class="modal-form" (ngSubmit)="createRoute()">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Дата маршрута</label>
+          <input type="datetime-local" class="form-input" [(ngModel)]="newRouteDate" name="routeDate" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Водитель</label>
+          <select class="form-select" [(ngModel)]="newRouteUserId" name="driver" required>
+            <option value="">Выберите водителя</option>
+            @for (driver of drivers; track driver.id) {
+            <option [value]="driver.id">{{ driver.full_name }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group full-width">
+          <label class="form-label">Примечание (необязательно)</label>
+          <textarea class="form-textarea" [(ngModel)]="newRouteNotes" name="notes" rows="3"
+            placeholder="Дополнительная информация о маршруте..."></textarea>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" (click)="createDialogVisible = false">
+          Отмена
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="!newRouteUserId || !newRouteDate">
+          Создать
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+}
+
+<!-- Модальное окно добавления погрузки -->
+@if (addLoadingDialogVisible) {
+<div class="modal-overlay" (click)="addLoadingDialogVisible = false">
+  <div class="modal-container wide" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 class="modal-title">Добавить место погрузки</h2>
+      <button class="close-button" (click)="addLoadingDialogVisible = false">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+      </button>
+    </div>
+
+    <form class="modal-form" (ngSubmit)="saveLoading()">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Название места</label>
+          <input type="text" class="form-input" [(ngModel)]="newLoading.loading_place_name" name="loadingPlaceName"
+            placeholder="Введите название места">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Адрес</label>
+          <input type="text" class="form-input" [(ngModel)]="newLoading.address" name="address"
+            placeholder="Введите адрес">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Время начала</label>
+          <input type="datetime-local" class="form-input" [(ngModel)]="newLoading.start_time" name="startTime">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Время окончания</label>
+          <input type="datetime-local" class="form-input" [(ngModel)]="newLoading.end_time" name="endTime">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Документ</label>
+          <input type="text" class="form-input" [(ngModel)]="newLoading.doc_number" name="docNumber"
+            placeholder="Номер документа">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Вес (кг)</label>
+          <input type="number" class="form-input" [(ngModel)]="newLoading.weight" name="weight" min="0" step="0.01"
+            placeholder="0">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Объем (м³)</label>
+          <input type="number" class="form-input" [(ngModel)]="newLoading.volume" name="volume" min="0" step="0.01"
+            placeholder="0">
+        </div>
+
+        <div class="form-group full-width">
+          <label class="form-label">Примечание</label>
+          <textarea class="form-textarea" [(ngModel)]="newLoading.note" name="note" rows="3"
+            placeholder="Дополнительная информация..."></textarea>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" (click)="addLoadingDialogVisible = false">
+          Отмена
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="!selectedRouteForAddLoading">
+          Сохранить
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+}
+
+
+
+<!-- Модальное окно добавления точки разгрузки -->
+@if (addUnloadingDialogVisible) {
+<div class="modal-overlay" (click)="addUnloadingDialogVisible = false">
+  <div class="modal-container wide" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 class="modal-title">Добавить точку разгрузки</h2>
+      <button class="close-button" (click)="addUnloadingDialogVisible = false">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+      </button>
+    </div>
+
+    <form class="modal-form" (ngSubmit)="saveUnloading()" #unloadingForm="ngForm">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">
+            Контрагент
+            <span class="required">*</span>
+          </label>
+          <input type="text" class="form-input" [(ngModel)]="newUnloading.counterparty" name="counterparty"
+            placeholder="Введите название контрагента" required>
+          <div class="error-message" *ngIf="unloadingForm.submitted && !newUnloading.counterparty">
+            Поле обязательно для заполнения
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            Адрес
+            <span class="required">*</span>
+          </label>
+          <input type="text" class="form-input" [(ngModel)]="newUnloading.address" name="address"
+            placeholder="Введите адрес доставки" required>
+          <div class="error-message" *ngIf="unloadingForm.submitted && !newUnloading.address">
+            Поле обязательно для заполнения
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            Номер документа
+            <span class="required">*</span>
+          </label>
+          <input type="text" class="form-input" [(ngModel)]="newUnloading.doc" name="doc"
+            placeholder="Введите номер документа" required>
+          <div class="error-message" *ngIf="unloadingForm.submitted && !newUnloading.doc">
+            Поле обязательно для заполнения
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            Сумма оплаты
+            <span class="required">*</span>
+          </label>
+          <div class="input-with-symbol">
+            <input type="number" class="form-input" [(ngModel)]="newUnloading.payment" name="payment" placeholder="0.00"
+              min="0" step="0.01" required>
+            <span class="input-symbol">₽</span>
+          </div>
+          <div class="error-message"
+            *ngIf="unloadingForm.submitted && (!newUnloading.payment && newUnloading.payment !== 0)">
+            Поле обязательно для заполнения
+          </div>
+        </div>
+
+        <div class="form-group full-width">
+          <label class="form-label">Примечание</label>
+          <textarea class="form-textarea" [(ngModel)]="newUnloading.note" name="note" rows="3"
+            placeholder="Дополнительная информация о точке разгрузки..."></textarea>
+        </div>
+
+        <!-- Дополнительная информация -->
+        <div class="form-group full-width">
+          <div class="info-card">
+            <div class="info-header">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+              </svg>
+              <span>Информация о маршруте</span>
+            </div>
+            <div class="info-content" *ngIf="selectedRouteForAddUnloading">
+              <div class="info-row">
+                <span class="info-label">Маршрут:</span>
+                <span class="info-value">{{ selectedRouteForAddUnloading.route_number }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Водитель:</span>
+                <span class="info-value">{{ selectedRouteForAddUnloading.driver_name }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">ТС:</span>
+                <span class="info-value">{{ selectedRouteForAddUnloading.vehicle_number }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" (click)="addUnloadingDialogVisible = false">
+          Отмена
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="!selectedRouteForAddUnloading">
+          <span *ngIf="!isSaving">Добавить точку</span>
+          <span *ngIf="isSaving" class="loading">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z" opacity="0.3" />
+              <path d="M12 2a10 10 0 0 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z" />
+            </svg>
+            Сохранение...
+          </span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+}

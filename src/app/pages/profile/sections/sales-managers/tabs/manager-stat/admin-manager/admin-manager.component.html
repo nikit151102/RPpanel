@@ -1,0 +1,328 @@
+<!-- admin-manager.component.html -->
+<div class="admin-manager">
+  <!-- Settings Button -->
+
+
+  <!-- Settings Dialog -->
+  <div class="dialog-overlay" [class.visible]="dialogVisible">
+    <div class="dialog-container">
+      <!-- Header -->
+      <div class="dialog-header">
+        <h2 class="dialog-title">Управление настройками</h2>
+        <button class="close-btn" (click)="closeDialog()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs-container">
+        <div class="tabs-header">
+          <button class="tab-btn" [class.active]="activeTab === 0" (click)="activeTab = 0">
+            Дневной факт
+          </button>
+          <button class="tab-btn" [class.active]="activeTab === 1" (click)="activeTab = 1">
+            Сотрудники
+          </button>
+          <button class="tab-btn" [class.active]="activeTab === 2" (click)="activeTab = 2">
+            Годовые планы
+          </button>
+          <button class="tab-btn" [class.active]="activeTab === 3" (click)="activeTab = 3">
+            Новые планы
+          </button>
+        </div>
+
+        <div class="tab-content">
+          <!-- Daily Fact Tab -->
+          <div class="tab-panel" [class.active]="activeTab === 0">
+            <div class="form-section">
+              <h3 class="section-title">Загрузка дневного факта</h3>
+              
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label">Дата</label>
+                  <input type="date" [(ngModel)]="selectedDate" class="form-input">
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Файл Excel</label>
+                  <div class="file-upload">
+                    <input type="file" #fileInput (change)="onFileSelect($event)" accept=".xlsx,.xls" class="file-input">
+                    <button class="file-btn" (click)="fileInput.click()">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+                      </svg>
+                      Выбрать файл
+                    </button>
+                    <span class="file-name" *ngIf="uploadedDayFile">{{ uploadedDayFile.name }}</span>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <button class="submit-btn" (click)="uploadFileAndDate()" [disabled]="!uploadedDayFile || !selectedDate">
+                    Отправить
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Employees Tab -->
+          <div class="tab-panel" [class.active]="activeTab === 1">
+            <div class="form-section">
+              <h3 class="section-title">{{ editingEmployee ? 'Редактировать сотрудника' : 'Добавить сотрудника' }}</h3>
+              
+              <div class="form-grid">
+                <input type="text" [(ngModel)]="employeeForm.last_name" placeholder="Фамилия" class="form-input">
+                <input type="text" [(ngModel)]="employeeForm.first_name" placeholder="Имя" class="form-input">
+                <input type="text" [(ngModel)]="employeeForm.middle_name" placeholder="Отчество" class="form-input">
+                <input type="number" [(ngModel)]="employeeForm.coefficient" placeholder="Коэффициент" min="0" max="10" step="0.1" class="form-input">
+                <button class="submit-btn" (click)="saveEmployee()">
+                  {{ editingEmployee ? 'Обновить' : 'Сохранить' }}
+                </button>
+              </div>
+            </div>
+
+            <div class="table-section">
+              <h3 class="section-title">Список сотрудников</h3>
+              <div class="table-container">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Фамилия</th>
+                      <th>Имя</th>
+                      <th>Отчество</th>
+                      <th>Коэффициент</th>
+                      <th class="actions-col">Действия</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let emp of employees">
+                      <td>{{ emp.last_name }}</td>
+                      <td>{{ emp.first_name }}</td>
+                      <td>{{ emp.middle_name }}</td>
+                      <td>{{ emp.coefficient }}</td>
+                      <td class="actions-col">
+                        <button class="action-btn edit" (click)="editEmployee(emp)" title="Редактировать">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                          </svg>
+                        </button>
+                        <button class="action-btn delete" (click)="deleteEmployee(emp.id)" title="Удалить">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                          </svg>
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Yearly Plans Tab -->
+          <div class="tab-panel" [class.active]="activeTab === 2">
+            <!-- Import Section -->
+            <div class="form-section">
+              <h3 class="section-title">Импорт месячного плана</h3>
+              
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label">Файл Excel</label>
+                  <div class="file-upload">
+                    <input type="file" #yearlyFileInput (change)="uploadFile($event)" accept=".xlsx,.xls" class="file-input">
+                    <button class="file-btn" (click)="yearlyFileInput.click()">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+                      </svg>
+                      Выбрать файл
+                    </button>
+                    <span class="file-name" *ngIf="uploadedFile">{{ uploadedFile.name }}</span>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Год</label>
+                  <input type="number" [(ngModel)]="selectedYear" placeholder="Год" class="form-input" min="2000" max="2100">
+                </div>
+
+                <div class="form-group">
+                  <button class="submit-btn" (click)="importMonthlyPlan()" [disabled]="!uploadedFile || !selectedYear">
+                    Загрузить
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Yearly Plans Form -->
+            <div class="form-section">
+              <h3 class="section-title">{{ editingYearly ? 'Редактировать годовой план' : 'Добавить годовой план' }}</h3>
+              
+              <div class="form-grid">
+                <input type="number" [(ngModel)]="yearlyForm.year" placeholder="Год" class="form-input">
+                <input type="number" [(ngModel)]="yearlyForm.profit" placeholder="Прибыль" class="form-input">
+                <select [(ngModel)]="yearlyForm.employee_id" class="form-input">
+                  <option value="">Выберите сотрудника</option>
+                  <option *ngFor="let emp of employees" [value]="emp.id">
+                    {{ emp.last_name }} {{ emp.first_name }} {{ emp.middle_name }}
+                  </option>
+                </select>
+                <select [(ngModel)]="yearlyForm.client_type_id" class="form-input">
+                  <option value="">Выберите тип клиента</option>
+                  <option *ngFor="let type of clientTypes" [value]="type.id">{{ type.name }}</option>
+                </select>
+                <button class="submit-btn" (click)="saveYearly()">
+                  {{ editingYearly ? 'Обновить' : 'Сохранить' }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Yearly Plans Table -->
+            <div class="table-section">
+              <h3 class="section-title">Годовые планы</h3>
+              <div class="table-container">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Год</th>
+                      <th>Прибыль</th>
+                      <th>Сотрудник</th>
+                      <th>Тип клиента</th>
+                      <th class="actions-col">Действия</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let plan of yearlyPlans">
+                      <td>{{ plan.year }}</td>
+                      <td>{{ plan.profit | number:'1.2-2' }}</td>
+                      <td>{{ plan.employee.last_name }} {{ plan.employee.first_name }} {{ plan.employee.middle_name }}</td>
+                      <td>{{ plan.client_type.name }}</td>
+                      <td class="actions-col">
+                        <button class="action-btn edit" (click)="editYearly(plan)" title="Редактировать">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                          </svg>
+                        </button>
+                        <button class="action-btn delete" (click)="deleteYearly(plan.id)" title="Удалить">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                          </svg>
+                        </button>
+                        <button class="action-btn view" (click)="selectYearly(plan)" title="Просмотреть месячные планы">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                          </svg>
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Monthly Plans Section -->
+            <div *ngIf="selectedYearly" class="monthly-section">
+              <div class="form-section">
+                <h3 class="section-title">Месячные планы {{ selectedYearly.year }} года</h3>
+                
+                <div class="form-grid">
+                  <input type="number" [(ngModel)]="monthlyForm.month" placeholder="Месяц" min="1" max="12" class="form-input">
+                  <input type="number" [(ngModel)]="monthlyForm.profit" placeholder="Прибыль" class="form-input">
+                  <select [(ngModel)]="monthlyForm.employee_id" class="form-input">
+                    <option value="">Выберите сотрудника</option>
+                    <option *ngFor="let emp of employees" [value]="emp.id">
+                      {{ emp.last_name }} {{ emp.first_name }} {{ emp.middle_name }}
+                    </option>
+                  </select>
+                  <select [(ngModel)]="monthlyForm.client_type_id" class="form-input">
+                    <option value="">Выберите тип клиента</option>
+                    <option *ngFor="let type of clientTypes" [value]="type.id">{{ type.name }}</option>
+                  </select>
+                  <button class="submit-btn" (click)="saveMonthly()">
+                    {{ editingMonthly ? 'Обновить' : 'Сохранить' }}
+                  </button>
+                </div>
+              </div>
+
+              <div class="table-section">
+                <div class="table-container">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>Месяц</th>
+                        <th>Прибыль</th>
+                        <th>Сотрудник</th>
+                        <th>Тип клиента</th>
+                        <th class="actions-col">Действия</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let plan of monthlyPlans">
+                        <td>{{ getMonthName(plan.month) }}</td>
+                        <td>{{ plan.profit | number:'1.2-2' }}</td>
+                        <td>{{ plan.employee.last_name }} {{ plan.employee.first_name }} {{ plan.employee.middle_name }}</td>
+                        <td>{{ plan.client_type.name }}</td>
+                        <td class="actions-col">
+                          <button class="action-btn edit" (click)="editMonthly(plan)" title="Редактировать">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                            </svg>
+                          </button>
+                          <button class="action-btn delete" (click)="deleteMonthly(plan.id)" title="Удалить">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                            </svg>
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- New Plans Tab -->
+          <div class="tab-panel" [class.active]="activeTab === 3">
+            <div class="table-section">
+              <h3 class="section-title">Планы на основе предыдущего года</h3>
+              <div class="table-container">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Менеджер</th>
+                      <th>Тип клиента</th>
+                      <th>Месяц</th>
+                      <th>Оригинальная прибыль</th>
+                      <th>Прибыль с коэффициентом</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let plan of oldMonthlyPlans">
+                      <td>{{ plan.short_name }}</td>
+                      <td>{{ plan.client_type }}</td>
+                      <td>{{ getMonthName(plan.month) }}</td>
+                      <td>{{ plan.original_profit | number:'1.2-2' }} руб.</td>
+                      <td>{{ plan.adjusted_profit | number:'1.2-2' }} руб.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="action-section">
+              <button class="create-plan-btn" (click)="createNewPlan()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                </svg>
+                Создать новый план
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

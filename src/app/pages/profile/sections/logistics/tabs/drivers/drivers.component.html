@@ -1,0 +1,243 @@
+<!-- drivers.component.html -->
+<div class="drivers-container">
+  <!-- Заголовок и кнопка добавления -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="title-section">
+        <h1 class="page-title">Водители</h1>
+        <p class="page-subtitle">Управление списком водителей компании</p>
+      </div>
+      <button class="add-button" (click)="openNew()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M12 5v14m-7-7h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        Добавить водителя
+      </button>
+    </div>
+  </div>
+
+  <!-- Карточка с таблицей -->
+  <div class="content-card">
+    <!-- Поиск и фильтры -->
+    <div class="table-controls">
+      <div class="search-box">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <input type="text" placeholder="Поиск водителей..." class="search-input">
+      </div>
+      
+      <div class="table-actions">
+        <button class="action-button export">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4m14-7l-5 5m0 0l-5-5m5 5V3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          Экспорт
+        </button>
+      </div>
+    </div>
+
+    <!-- Таблица -->
+    <div class="table-container">
+      <table class="drivers-table">
+        <thead>
+          <tr>
+            <th class="sortable" (click)="sortTable('username')">
+              <span>Логин</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                <path d="M7 15l5 5 5-5M7 9l5-5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </th>
+            <th class="sortable" (click)="sortTable('first_name')">
+              <span>Имя</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                <path d="M7 15l5 5 5-5M7 9l5-5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </th>
+            <th class="sortable" (click)="sortTable('last_name')">
+              <span>Фамилия</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                <path d="M7 15l5 5 5-5M7 9l5-5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </th>
+            <th>Отчество</th>
+            <th class="sortable" (click)="sortTable('rate')">
+              <span>Ставка</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                <path d="M7 15l5 5 5-5M7 9l5-5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </th>
+            <th class="actions-header">Действия</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of users; track user.id; let i = $index) {
+            <tr [class.even]="i % 2 === 0">
+              <td class="username-cell">
+                <div class="user-avatar">
+                  {{ getUserInitials(user) }}
+                </div>
+                <span class="username">{{ user.username }}</span>
+              </td>
+              <td>{{ user.first_name || '-' }}</td>
+              <td>{{ user.last_name || '-' }}</td>
+              <td>{{ user.middle_name || '-' }}</td>
+              <td>
+                <span class="rate-badge">{{ user.rate || 0 }} ₽</span>
+              </td>
+              <td class="actions-cell">
+                <div class="action-buttons">
+                  <button class="action-btn edit" (click)="editUser(user)" title="Редактировать">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                      <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="2"/>
+                      <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                  </button>
+                  <button class="action-btn delete" (click)="deleteUser(user)" title="Удалить">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                      <path d="M3 6h18m-2 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+          @empty {
+            <tr>
+              <td colspan="6" class="empty-state">
+                <div class="empty-content">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                  <h3>Нет водителей</h3>
+                  <p>Добавьте первого водителя, нажав на кнопку выше</p>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Пагинация -->
+    <div class="pagination">
+      <button class="pagination-btn" [disabled]="currentPage === 1" (click)="previousPage()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      
+      <div class="page-numbers">
+        @for (page of getPageNumbers(); track page) {
+          <button 
+            class="page-number" 
+            [class.active]="page === currentPage"
+            (click)="goToPage(page)">
+            {{ page }}
+          </button>
+        }
+      </div>
+      
+      <button class="pagination-btn" [disabled]="currentPage === totalPages" (click)="nextPage()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Модальное окно добавления/редактирования -->
+@if (userDialog) {
+  <div class="modal-overlay" (click)="hideDialog()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">{{ userDialogTitle }}</h2>
+        <button class="close-button" (click)="hideDialog()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <form class="modal-form" (ngSubmit)="saveUser()">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="username" class="form-label">Логин *</label>
+            <input 
+              id="username" 
+              type="text" 
+              class="form-input" 
+              [(ngModel)]="selectedUser.username" 
+              name="username"
+              required>
+          </div>
+
+          <div class="form-group">
+            <label for="first_name" class="form-label">Имя</label>
+            <input 
+              id="first_name" 
+              type="text" 
+              class="form-input" 
+              [(ngModel)]="selectedUser.first_name" 
+              name="first_name">
+          </div>
+
+          <div class="form-group">
+            <label for="last_name" class="form-label">Фамилия</label>
+            <input 
+              id="last_name" 
+              type="text" 
+              class="form-input" 
+              [(ngModel)]="selectedUser.last_name" 
+              name="last_name">
+          </div>
+
+          <div class="form-group">
+            <label for="middle_name" class="form-label">Отчество</label>
+            <input 
+              id="middle_name" 
+              type="text" 
+              class="form-input" 
+              [(ngModel)]="selectedUser.middle_name" 
+              name="middle_name">
+          </div>
+
+          <div class="form-group">
+            <label for="rate" class="form-label">Ставка</label>
+            <input 
+              id="rate" 
+              type="number" 
+              class="form-input" 
+              [(ngModel)]="selectedUser.rate" 
+              name="rate"
+              min="0"
+              step="0.01">
+          </div>
+
+          @if (!selectedUser.id) {
+            <div class="form-group">
+              <label for="password" class="form-label">Пароль *</label>
+              <input 
+                id="password" 
+                type="password" 
+                class="form-input" 
+                [(ngModel)]="selectedUser.password" 
+                name="password"
+                required>
+            </div>
+          }
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" (click)="hideDialog()">
+            Отмена
+          </button>
+          <button type="submit" class="btn btn-primary">
+            Сохранить
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

@@ -1,0 +1,196 @@
+<!-- vacancies-jobs.component.html -->
+<div class="vacancies-container">
+  <!-- Header -->
+  <header class="vacancies-header">
+    <div class="header-content">
+      <div class="header-title">
+        <h1 class="title">Управление вакансиями</h1>
+        <p class="subtitle">Создание и редактирование вакансий</p>
+      </div>
+      <button class="create-btn" (click)="openNewJobOpeningDialog()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+        </svg>
+        Создать новую вакансию
+      </button>
+    </div>
+  </header>
+
+  <!-- Table -->
+  <div class="table-container">
+    <table class="vacancies-table">
+      <thead>
+        <tr>
+          <th>Название</th>
+          <th>Зарплата от</th>
+          <th>Зарплата до</th>
+          <th>Категория</th>
+          <th>Описание</th>
+          <th class="actions-column">Действия</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let job of jobOpenings" class="vacancy-row">
+          <td class="title-cell">
+            <div class="title-value">{{ job.title }}</div>
+          </td>
+          <td class="salary-cell">
+            <div class="salary-value">{{ job.salary_from | number:'1.0-0' }} ₽</div>
+          </td>
+          <td class="salary-cell">
+            <div class="salary-value">{{ job.salary_to | number:'1.0-0' }} ₽</div>
+          </td>
+          <td class="category-cell">
+            <span class="category-badge">{{ job.category }}</span>
+          </td>
+          <td class="description-cell">
+            <div class="description-value" [title]="job.description">
+              {{ job.description | truncate:100 }}
+            </div>
+          </td>
+          <td class="actions-cell">
+            <div class="actions-container">
+              <button class="action-btn edit-btn" (click)="openDialog(job)" title="Редактировать">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                </svg>
+              </button>
+              <button class="action-btn delete-btn" (click)="deleteJobOpening(job.id)" title="Удалить">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                </svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+
+        <!-- Empty State -->
+        <tr *ngIf="jobOpenings.length === 0" class="empty-row">
+          <td colspan="6">
+            <div class="empty-state">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+              </svg>
+              <h3>Вакансии не найдены</h3>
+              <p>Создайте первую вакансию, нажав на кнопку выше</p>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Create/Edit Dialog -->
+  <div class="dialog-overlay" [class.visible]="isDialogVisible">
+    <div class="dialog-container">
+      <div class="dialog-header">
+        <h2 class="dialog-title">{{ isEditMode ? 'Редактировать вакансию' : 'Создать вакансию' }}</h2>
+        <button class="close-btn" (click)="closeDialog()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="dialog-content">
+        <form class="vacancy-form">
+          <!-- Basic Information -->
+          <div class="form-section">
+            <h3 class="section-title">Основная информация</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Название вакансии *</label>
+                <input type="text" [(ngModel)]="newJobOpening.title" name="title" class="form-input" placeholder="Введите название">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Категория *</label>
+                <select [(ngModel)]="newJobOpening.category" name="category" class="form-input">
+                  <option value="">Выберите категорию</option>
+                  <option *ngFor="let category of categories" [value]="category.code">
+                    {{ category.name }}
+                  </option>
+                </select>
+              </div>
+
+              <div class="salary-group">
+                <div class="form-group">
+                  <label class="form-label">Зарплата от *</label>
+                  <div class="input-with-symbol">
+                    <input type="number" [(ngModel)]="newJobOpening.salary_from" name="salary_from" class="form-input" placeholder="0">
+                    <span class="input-symbol">₽</span>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Зарплата до *</label>
+                  <div class="input-with-symbol">
+                    <input type="number" [(ngModel)]="newJobOpening.salary_to" name="salary_to" class="form-input" placeholder="0">
+                    <span class="input-symbol">₽</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group full-width">
+                <label class="form-label">Описание *</label>
+                <textarea [(ngModel)]="newJobOpening.description" name="description" class="form-textarea" placeholder="Опишите вакансию..." rows="4"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Additional Sections -->
+          <div class="form-section">
+            <div class="section-header">
+              <h3 class="section-title">Дополнительные секции</h3>
+              <button type="button" class="add-section-btn" (click)="addAdditionalSection()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                </svg>
+                Добавить секцию
+              </button>
+            </div>
+
+            <div class="sections-container">
+              <div *ngFor="let section of newJobOpening.additional_sections; let i = index" class="section-item">
+                <div class="section-header">
+                  <h4 class="section-subtitle">Секция {{ i + 1 }}</h4>
+                  <button type="button" class="remove-section-btn" (click)="removeAdditionalSection(i)" title="Удалить секцию">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                  </button>
+                </div>
+                
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label">Заголовок секции</label>
+                    <input type="text" [(ngModel)]="section.title" [name]="'section_title_' + i" class="form-input" placeholder="Введите заголовок">
+                  </div>
+                  <div class="form-group full-width">
+                    <label class="form-label">Содержание секции</label>
+                    <textarea [(ngModel)]="section.content" [name]="'section_content_' + i" class="form-textarea" placeholder="Введите содержание..." rows="3"></textarea>
+                  </div>
+                </div>
+              </div>
+
+              <div *ngIf="newJobOpening.additional_sections.length === 0" class="no-sections">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+                </svg>
+                <p>Дополнительные секции отсутствуют</p>
+                <small>Добавьте секции для более подробного описания вакансии</small>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="dialog-actions">
+        <button class="btn btn-secondary" (click)="closeDialog()">Отмена</button>
+        <button class="btn btn-primary" (click)="saveJobOpening()" [disabled]="!isFormValid()">
+          {{ isEditMode ? 'Обновить' : 'Создать' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

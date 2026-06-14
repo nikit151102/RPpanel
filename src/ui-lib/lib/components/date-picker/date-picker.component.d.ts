@@ -1,0 +1,30 @@
+import { ElementRef } from '@angular/core';
+import { ControlValueAccessor } from '@angular/forms';
+import * as i0 from "@angular/core";
+export declare class DatePickerComponent implements ControlValueAccessor {
+    private el;
+    placeholder: string;
+    minDate?: Date;
+    maxDate?: Date;
+    value: Date | null;
+    showCalendar: boolean;
+    weeks: (Date | null)[][];
+    selectedMonth: number;
+    selectedYear: number;
+    private onChange;
+    private onTouched;
+    writeValue(obj: any): void;
+    registerOnChange(fn: any): void;
+    registerOnTouched(fn: any): void;
+    setDisabledState?(isDisabled: boolean): void;
+    toggleCalendar(): void;
+    selectDate(date: Date): void;
+    prevMonth(): void;
+    nextMonth(): void;
+    generateCalendar(): void;
+    isSelected(date: Date | null): any;
+    onClickOutside(target: HTMLElement): void;
+    constructor(el: ElementRef);
+    static ɵfac: i0.ɵɵFactoryDeclaration<DatePickerComponent, never>;
+    static ɵcmp: i0.ɵɵComponentDeclaration<DatePickerComponent, "lib-date-picker", never, { "placeholder": { "alias": "placeholder"; "required": false; }; "minDate": { "alias": "minDate"; "required": false; }; "maxDate": { "alias": "maxDate"; "required": false; }; }, {}, never, never, true, never>;
+}

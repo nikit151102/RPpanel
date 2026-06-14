@@ -1,0 +1,202 @@
+<div class="modal-overlay day-details-overlay" (click)="close.emit()">
+  <div class="modal-container day-details-modal" (click)="$event.stopPropagation()">
+    
+    <!-- Заголовок с градиентом -->
+    <div class="modal-header">
+      <div class="header-content">
+        <div class="header-icon">
+          <i class="fas fa-calendar-day"></i>
+        </div>
+        <div class="header-text">
+          <h3>Отпуски на {{ selectedDay?.date | date:'dd MMMM yyyy' }}</h3>
+          <div class="header-subtitle">
+            <span class="day-name">{{ getDayName(selectedDay?.date) }}</span>
+            <span class="day-count" *ngIf="selectedDayVacations.length > 0">
+              • {{ selectedDayVacations.length }} отпуск{{ getPluralEnding(selectedDayVacations.length) }}
+            </span>
+          </div>
+        </div>
+      </div>
+      <button class="close-btn" (click)="close.emit()" aria-label="Закрыть">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Тело модального окна -->
+    <div class="modal-body">
+      
+      <!-- Пустое состояние -->
+      <div *ngIf="selectedDayVacations.length === 0" class="empty-state">
+        <div class="empty-animation">
+          <div class="sun-icon">
+            <i class="fas fa-sun"></i>
+          </div>
+          <div class="empty-text">
+            <h4>Сегодня все на работе!</h4>
+            <p>На этот день отпусков не запланировано</p>
+          </div>
+        </div>
+        <div class="empty-actions">
+          <!-- <button class="btn btn-gradient" (click)="openCreateForUserModal()">
+            <i class="fas fa-plus"></i>
+            <span>Создать отпуск</span>
+          </button> -->
+        </div>
+      </div>
+
+      <!-- Список отпусков -->
+      <div *ngIf="selectedDayVacations.length > 0" class="vacations-list">
+        
+        <!-- Фильтры и статистика -->
+        <div class="list-header">
+          <div class="stats">
+            <div class="stat-item">
+              <div class="stat-value">{{ getPendingCount() }}</div>
+              <div class="stat-label">На согласовании</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">{{ getApprovedCount() }}</div>
+              <div class="stat-label">Утверждено</div>
+            </div>
+          </div>
+          
+          <div class="list-filters">
+            <div class="filter-group">
+              <label>Статус:</label>
+              <select class="filter-select" (change)="onStatusFilterChange($event)">
+                <option value="all">Все статусы</option>
+                <option value="pending">На согласовании</option>
+                <option value="approved">Утверждено</option>
+                <option value="active">Активные</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Карточки отпусков -->
+        <div class="vacations-grid">
+          <div *ngFor="let vacation of filteredVacations" 
+               class="vacation-card"
+               [class.pending]="vacation.status === VacationStatus.PENDING"
+               [class.approved]="vacation.status === VacationStatus.APPROVED"
+               [class.active]="vacation.status === VacationStatus.ACTIVE"
+               [class.rejected]="vacation.status === VacationStatus.REJECTED">
+            
+            <!-- Аватар и основная информация -->
+            <div class="card-header">
+              <div class="user-info">
+                <div class="avatar" [style.background-color]="getStatusColor(vacation.status)">
+                  {{ getUserInitials(vacation.user) }}
+                </div>
+                <div class="user-details">
+                  <h4 class="user-name">{{ vacation.user?.first_name }} {{ vacation.user?.last_name }}</h4>
+                  <div class="user-meta">
+                    <span class="position">{{ vacation.user?.position }}</span>
+                    <span class="department">{{ vacation.user?.department }}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Статус и даты -->
+              <div class="vacation-meta">
+                <div class="status-badge" [style.background-color]="getStatusColor(vacation.status)">
+                  <i class="fas {{ getStatusIcon(vacation.status) }}"></i>
+                  {{ getStatusLabel(vacation.status) }}
+                </div>
+                <div class="dates">
+                  <i class="far fa-calendar-alt"></i>
+                  {{ formatDisplayDate(vacation.start_date) }} — {{ formatDisplayDate(vacation.end_date) }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Детали отпуска -->
+            <div class="card-body">
+              <div class="vacation-details">
+                <div class="detail-row">
+                  <div class="detail-item">
+                    <i class="fas fa-clock"></i>
+                    <span>{{ vacation.total_days }} дн.</span>
+                  </div>
+                  <div class="detail-item">
+                    <i class="fas fa-briefcase"></i>
+                    <span>{{ vacation.work_days }} раб. дн.</span>
+                  </div>
+                  <div class="detail-item">
+                    <i class="fas fa-tag"></i>
+                    <span>{{ getTypeLabel(vacation.vacation_type) }}</span>
+                  </div>
+                </div>
+
+                <!-- Комментарий (если есть) -->
+                <div *ngIf="vacation.comment" class="comment-section">
+                  <div class="comment-header">
+                    <i class="far fa-comment"></i>
+                    <span>Комментарий</span>
+                  </div>
+                  <p class="comment-text">{{ vacation.comment }}</p>
+                </div>
+
+                <!-- Действия -->
+                <div class="card-actions" *ngIf="vacation.status === VacationStatus.PENDING && canApproveVacation(vacation)">
+                  <div class="action-buttons">
+                    <button class="btn-approve" (click)="openApproveModal.emit(vacation)">
+                      <i class="fas fa-check"></i>
+                      <span>Утвердить</span>
+                    </button>
+                    <button class="btn-reject" (click)="openRejectModal.emit(vacation)">
+                      <i class="fas fa-times"></i>
+                      <span>Отклонить</span>
+                    </button>
+                  </div>
+                  <div class="action-hint">
+                    <i class="fas fa-info-circle"></i>
+                    Доступны действия для согласования
+                  </div>
+                </div>
+
+                <!-- Информация о согласовании -->
+                <div *ngIf="vacation.approved_by" class="approval-info">
+                  <div class="approver">
+                    <i class="fas fa-user-check"></i>
+                    Утверждено: {{ vacation.approved_by?.first_name }} {{ vacation.approved_by?.last_name }}
+                  </div>
+                  <div class="approval-date">
+                    <i class="far fa-calendar-check"></i>
+                    {{ vacation.approval_date | date:'dd.MM.yyyy' }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Подсказка для больших списков -->
+        <div *ngIf="selectedDayVacations.length > 3" class="list-tip">
+          <i class="fas fa-lightbulb"></i>
+          Используйте колесико мыши или свайп для прокрутки списка
+        </div>
+      </div>
+    </div>
+
+    <!-- Футер модального окна -->
+    <div class="modal-footer">
+      <div class="footer-actions">
+        <button class="btn btn-secondary" (click)="close.emit()">
+          <i class="fas fa-times"></i>
+          <span>Закрыть</span>
+        </button>
+        <button class="btn btn-primary" (click)="exportDayData()" *ngIf="selectedDayVacations.length > 0">
+          <i class="fas fa-download"></i>
+          <span>Экспорт</span>
+        </button>
+      </div>
+      <div class="footer-info">
+        <span class="info-text">
+          <i class="fas fa-info-circle"></i>
+          Показаны все отпуски на выбранную дату
+        </span>
+      </div>
+    </div>
+  </div>
+</div>

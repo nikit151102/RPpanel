@@ -1,0 +1,127 @@
+<div class="results-container">
+    <!-- Header -->
+    <div class="results-header">
+        <div class="header-content">
+            <h1 class="test-title">Результаты тестирования</h1>
+            <div class="test-info">
+                <h2 class="test-name">{{ dataTestResult?.test?.name }}</h2>
+                <div class="test-meta">
+                    <span class="test-date" *ngIf="dataTestResult?.created_at">
+                        Пройден: {{ dataTestResult.created_at | date:'dd.MM.yyyy HH:mm' }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Info Card -->
+    <div class="user-card" *ngIf="dataTestResult?.user">
+        <div class="card-header">
+            <h3 class="card-title">Информация о пользователе</h3>
+        </div>
+        <div class="card-content">
+            <div class="user-info-grid">
+                <div class="info-item">
+                    <span class="info-label">Фамилия:</span>
+                    <span class="info-value">{{ dataTestResult.user.last_name || 'Не указано' }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Имя:</span>
+                    <span class="info-value">{{ dataTestResult.user.first_name || 'Не указано' }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Отчество:</span>
+                    <span class="info-value">{{ dataTestResult.user.middle_name || 'Не указано' }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Телефон:</span>
+                    <span class="info-value">{{ dataTestResult.user.phone_number || 'Не указано' }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Answers Section -->
+    <div class="answers-section">
+        <div class="section-header">
+            <h3 class="section-title">Ответы на вопросы</h3>
+            <div class="section-stats" *ngIf="dataTestResult?.answers">
+                Всего вопросов: {{ dataTestResult.answers.length }}
+            </div>
+        </div>
+
+        <!-- Answers List -->
+        <div class="answers-list">
+            <div *ngFor="let answer of dataTestResult?.answers; let i = index" class="answer-card">
+                <div class="question-header">
+                    <div class="question-number">Вопрос {{ i + 1 }}</div>
+                    <div class="question-type" *ngIf="answer.option">
+                        <span class="type-badge">Выбор</span>
+                    </div>
+                    <div class="question-type" *ngIf="!answer.option && answer.open_answer">
+                        <span class="type-badge open">Открытый</span>
+                    </div>
+                </div>
+                
+                <div class="question-text">
+                    {{ answer.question.text }}
+                </div>
+
+                <div class="answer-content">
+                    <div class="answer-label">Ответ:</div>
+                    <div class="answer-value">
+                        <!-- Ответы с выбором -->
+                        <ng-container *ngIf="answer.option">
+                            <div class="selected-option">
+                                <div class="option-text">{{ answer.option.text }}</div>
+                            </div>
+                        </ng-container>
+
+                        <!-- Открытые ответы -->
+                        <ng-container *ngIf="!answer.option && answer.open_answer">
+                            <div class="open-answer">
+                                <div class="open-answer-text">{{ answer.open_answer }}</div>
+                            </div>
+                        </ng-container>
+
+                        <!-- Если ответа нет -->
+                        <ng-container *ngIf="!answer.option && !answer.open_answer">
+                            <div class="no-answer">
+                                <span class="no-answer-text">Ответ не предоставлен</span>
+                            </div>
+                        </ng-container>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="!dataTestResult?.answers || dataTestResult.answers.length === 0" class="empty-state">
+            <div class="empty-icon">📝</div>
+            <h4>Ответы не найдены</h4>
+            <p>Нет данных об ответах на вопросы теста</p>
+        </div>
+
+        <!-- Loading State -->
+        <div *ngIf="!dataTestResult" class="loading-state">
+            <div class="loading-spinner"></div>
+            <p>Загрузка результатов...</p>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons" *ngIf="dataTestResult">
+        <button class="btn btn-secondary" (click)="goBack()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+            </svg>
+            Назад
+        </button>
+        <button class="btn btn-primary" (click)="exportResults()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+            </svg>
+            Экспорт в PDF
+        </button>
+    </div>
+</div>

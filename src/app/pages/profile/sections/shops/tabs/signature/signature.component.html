@@ -1,0 +1,131 @@
+<div class="container">
+  <!-- Официальный бланк документа -->
+  <div class="official-document">
+    <!-- Шапка документа -->
+    <div class="document-header">
+      <div class="organization-info">
+        <div class="org-name">ООО "Сервисмаркер"</div>
+        <div class="org-details">ИНН 5404205450 / КПП 540401001</div>
+      </div>
+      <div class="document-title">
+        <h1>ПЛАН ТОРГОВОЙ ТОЧКИ НА МЕСЯЦ</h1>
+        <div class="document-number">№ {{signatureData?.number}}</div>
+      </div>
+    </div>
+
+    <!-- Основное содержание -->
+    <div class="document-body">
+      <!-- Дата и получатель -->
+      <div class="document-meta">
+        <div class="meta-row">
+          <span class="meta-label">Дата составления:</span>
+          <span class="meta-value">{{signatureData?.dateTime}}</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">Период действия:</span>
+          <span class="meta-value">
+            {{ signatureData?.beginDateTime | date:'dd.MM.yyyy' }} -
+            {{ signatureData?.endDateTime | date:'dd.MM.yyyy' }}
+          </span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">Торговая точка:</span>
+          <span class="meta-value">Магазин пакетон.рф - {{signatureData?.store?.address?.city}},
+            {{signatureData?.store?.address?.street}}, {{signatureData?.store?.address?.house}} </span>
+        </div>
+      </div>
+
+      <!-- Текст документа -->
+      <div class="document-text">
+        <p class="text-paragraph">
+          Настоящим документом утверждаются плановые показатели для торговой точки
+          <strong>{{shopName}}</strong> на отчетный период. План подлежит выполнению
+          в установленные сроки и является основой для оценки эффективности работы.
+        </p>
+
+        <!-- Плановые показатели -->
+        <div class="plan-section">
+          <div class="plan-grid">
+            <div class="plan-category">
+              <h4 style="margin: 10px 0; ">УТВЕРЖДАЕМЫЕ ПЛАНОВЫЕ ПОКАЗАТЕЛИ</h4>
+              <div class="plan-item">
+                <span class="plan-label">План продаж на месяц:</span>
+                <span class="plan-value"> {{signatureData?.monthPlanAccountant.toLocaleString('ru-RU')}} рублей</span>
+              </div>
+              <!-- <div class="plan-item">
+                <span class="plan-label">Дневной план:</span>
+                <span class="plan-value"> {{dailyPlan.toLocaleString('ru-RU')}} рублей</span>
+              </div> -->
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Заключение -->
+        <div class="conclusion-section">
+          <p>
+            Утвержденные показатели являются целевыми для работы торговой точки на предстоящий период.
+            Руководство магазина обязуется принять все необходимые меры для достижения установленных целей.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Блоки подписи -->
+    @if (signatureData?.documentSignature == null) {
+    <div class="signature-section">
+      <div class="signature-blocks">
+        <!-- Подпись управляющего -->
+        <div class="signature-block">
+          <div class="signature-label">Управляющий магазином:</div>
+          <div class="signature-container">
+            <canvas #canvas class="signature-canvas" width="400" height="200">
+            </canvas>
+            <div class="canvas-placeholder">
+              <div class="placeholder-content">
+                <span>Подпись управляющего</span>
+              </div>
+            </div>
+          </div>
+          <div class="signature-caption">
+            Собственноручная подпись<br>
+            <strong>{{managerName}}</strong><br>
+            Управляющий магазином {{shopName}}
+          </div>
+        </div>
+      </div>
+
+      <div class="signature-actions">
+        <button type="button" class="btn btn-clear" (click)="clear()">
+          <i class="icon-clear"></i>
+          Очистить подпись
+        </button>
+        <button type="button" class="btn btn-primary" (click)="saveAsPNG()">
+          <i class="icon-confirm"></i>
+          Подписать
+        </button>
+      </div>
+    </div>
+    } @else {
+    <!-- Блок для отображения существующей подписи -->
+    <div class="existing-signature">
+      <div class="signature-preview">
+        <img *ngIf="fileContent" [src]="'data:image/png;base64,' + fileContent" alt="Подпись управляющего"
+          class="signature-image">
+        <div class="signature-info">
+          <p> {{ managerName }}</p>
+          <p>{{ signatureData?.documentSignature?.dateTime | date:'dd.MM.yyyy HH:mm' }}</p>
+        </div>
+      </div>
+    </div>
+    }
+
+    <!-- Визуальные элементы документа -->
+    <div class="document-footer">
+      <div class="footer-line"></div>
+      <div class="footer-text">
+        Документ составлен в электронной форме. Подпись управляющего удостоверяет ознакомление и принятие плана.
+      </div>
+    </div>
+  </div>
+</div>

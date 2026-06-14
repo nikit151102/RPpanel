@@ -1,0 +1,28 @@
+<div class="signature-container">
+  <div class="signature-header">
+    <h3>Поставьте подпись</h3>
+    <button type="button" class="btn-clear" (click)="clear()">
+      Очистить
+    </button>
+  </div>
+  
+  <div class="canvas-container">
+    <canvas 
+      #canvas 
+      class="signature-canvas">
+    </canvas>
+  </div>
+
+  <div class="signature-actions">
+    <button type="button" class="btn btn-secondary" (click)="cancel()">
+      Отмена
+    </button>
+    <button type="button" class="btn btn-primary" (click)="saveSignature()">
+      Подтвердить подпись
+    </button>
+  </div>
+
+  <div class="signature-hint">
+    <p>👆 Рисуйте пальцем, стилусом или мышкой</p>
+  </div>
+</div>

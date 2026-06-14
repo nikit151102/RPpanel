@@ -1,0 +1,110 @@
+<div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2 class="modal-title">Изменение статуса инцидента</h2>
+            <button class="close-button" (click)="closeModal()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" />
+                </svg>
+            </button>
+        </div>
+
+        <form [formGroup]="statusForm" (ngSubmit)="onSubmit()" class="modal-content">
+
+            <!-- Текущий статус -->
+            <div class="current-status" *ngIf="currentIncident">
+                <label class="section-label">Текущий статус:</label>
+                    {{ currentIncident.last_status_log?.new_status }}
+            </div>
+
+            <!-- Выбор нового статуса -->
+            <div class="form-group">
+                <label for="newStatus" class="form-label">
+                    Новый статус
+                    <span class="required">*</span>
+                </label>
+                <div class="select-wrapper">
+                    <select id="newStatus" formControlName="new_status_id" class="form-select"
+                        (change)="onStatusChange()">
+                        <option value="">Выберите статус</option>
+                        <option *ngFor="let status of availableStatuses" [value]="status.id"
+                            [disabled]="status.id === currentIncident.status_id">
+                            {{ status.name }}
+                            <span *ngIf="status.id === currentIncident?.status_id">(текущий)</span>
+                        </option>
+                    </select>
+                    <svg class="select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M7 10l5 5 5-5z" />
+                    </svg>
+                </div>
+                <div class="error-message"
+                    *ngIf="statusForm.get('new_status_id')?.invalid && statusForm.get('new_status_id')?.touched">
+                    Пожалуйста, выберите новый статус
+                </div>
+            </div>
+
+            <!-- Описание выбранного статуса -->
+            <div class="status-description" *ngIf="selectedStatusDescription">
+                <div class="description-header">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+                    </svg>
+                    Описание статуса
+                </div>
+                <p>{{ selectedStatusDescription }}</p>
+            </div>
+
+            <!-- Комментарий -->
+            <div class="form-group">
+                <label for="comment" class="form-label">
+                    Комментарий к изменению
+                    <span class="required">*</span>
+                </label>
+                <div class="textarea-wrapper">
+                    <textarea id="comment" formControlName="comment" class="form-textarea"
+                        placeholder="Опишите причину изменения статуса..." rows="4" maxlength="500"></textarea>
+                    <div class="textarea-footer">
+                        <div class="char-counter">
+                            {{ statusForm.get('comment')?.value?.length || 0 }}/500
+                        </div>
+                    </div>
+                </div>
+                <div class="error-message"
+                    *ngIf="statusForm.get('comment')?.invalid && statusForm.get('comment')?.touched">
+                    Пожалуйста, укажите комментарий
+                </div>
+            </div>
+
+            <!-- Предупреждение при выборе определенных статусов -->
+            <div class="warning-message" *ngIf="showWarning">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
+                </svg>
+                <div class="warning-content">
+                    <strong>Внимание!</strong>
+                    <p>Этот статус указывает на проблему в обработке инцидента. Убедитесь, что комментарий достаточно
+                        подробный.</p>
+                </div>
+            </div>
+
+            <!-- Кнопки действий -->
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" (click)="closeModal()">
+                    Отмена
+                </button>
+                <button type="submit" class="btn btn-primary" [disabled]="statusForm.invalid || isSubmitting">
+                    <span *ngIf="!isSubmitting">Сохранить изменения</span>
+                    <span *ngIf="isSubmitting" class="loading">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"
+                                opacity="0.3" />
+                            <path d="M12 2a10 10 0 0 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z" />
+                        </svg>
+                        Сохранение...
+                    </span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

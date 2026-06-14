@@ -1,0 +1,1053 @@
+@import '../modal-base.scss';
+
+// Переменные
+$primary-gradient: linear-gradient(135deg, #4361ee, #3a56d4);
+$success-gradient: linear-gradient(135deg, #10b981, #059669);
+$warning-gradient: linear-gradient(135deg, #f59e0b, #d97706);
+$danger-gradient: linear-gradient(135deg, #ef4444, #dc2626);
+$glass-bg: rgba(255, 255, 255, 0.95);
+$glass-border: 1px solid rgba(255, 255, 255, 0.2);
+$shadow-deep: 0 20px 60px rgba(0, 0, 0, 0.3);
+$shadow-light: 0 8px 30px rgba(0, 0, 0, 0.12);
+$radius-xl: 24px;
+$radius-lg: 16px;
+$radius-md: 12px;
+$radius-sm: 8px;
+$transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+$transition-bounce: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+// Миксины
+@mixin glass-effect {
+  background: $glass-bg;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: $glass-border;
+  box-shadow: $shadow-light;
+}
+
+@mixin gradient-text {
+  background: $primary-gradient;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin responsive-grid($columns) {
+  display: grid;
+  grid-template-columns: repeat($columns, 1fr);
+  gap: 1.5rem;
+
+  @media (max-width: 1200px) {
+    grid-template-columns: repeat(min($columns, 3), 1fr);
+  }
+
+  @media (max-width: 992px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// Основные стили модального окна
+.day-details-overlay {
+  backdrop-filter: blur(10px);
+  background: rgba(0, 0, 0, 0.7);
+  animation: fadeIn 0.3s ease-out;
+  padding: 1rem;
+  overflow-y: auto;
+
+  .day-details-modal {
+    max-width: 1200px;
+    width: 100%;
+    max-height: 90vh;
+    border-radius: $radius-xl;
+    overflow: hidden;
+    animation: slideUpModal 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    // Эффект неона для модального окна
+    position: relative;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(45deg, 
+        #4361ee, #3a56d4, #10b981, #059669, #f59e0b, #d97706);
+      background-size: 400% 400%;
+      border-radius: $radius-xl + 2px;
+      z-index: -1;
+      filter: blur(10px);
+      opacity: 0.3;
+      animation: neonGlow 3s ease-in-out infinite alternate;
+    }
+  }
+}
+
+// Заголовок
+.modal-header {
+  background: $primary-gradient;
+  padding: 2rem;
+  color: white;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, 
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0.05) 50%,
+      rgba(255, 255, 255, 0) 100%);
+  }
+
+  .header-content {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    position: relative;
+    z-index: 1;
+
+    .header-icon {
+      width: 60px;
+      height: 60px;
+      @include flex-center;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      backdrop-filter: blur(10px);
+      
+      i {
+        font-size: 1.8rem;
+        animation: pulse 2s infinite;
+      }
+    }
+
+    .header-text {
+      flex: 1;
+      
+      h3 {
+        margin: 0;
+        font-size: 1.8rem;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+      }
+
+      .header-subtitle {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-top: 0.5rem;
+        opacity: 0.9;
+        
+        .day-name {
+          font-size: 1.1rem;
+          font-weight: 500;
+        }
+        
+        .day-count {
+          background: rgba(255, 255, 255, 0.2);
+          padding: 0.25rem 0.75rem;
+          border-radius: 20px;
+          font-size: 0.9rem;
+        }
+      }
+    }
+  }
+
+  .close-btn {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    width: 44px;
+    height: 44px;
+    @include flex-center;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    transition: $transition-smooth;
+    z-index: 2;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: rotate(90deg) scale(1.1);
+    }
+
+    i {
+      font-size: 1.2rem;
+    }
+  }
+}
+
+// Тело модального окна
+.modal-body {
+  padding: 2rem;
+  background: #f8fafc;
+  max-height: calc(90vh - 200px);
+  overflow-y: auto;
+  
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: $primary-gradient;
+    border-radius: 4px;
+  }
+}
+
+// Пустое состояние
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  animation: fadeInUp 0.6s ease-out;
+
+  .empty-animation {
+    margin-bottom: 2rem;
+    
+    .sun-icon {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 2rem;
+      @include flex-center;
+      background: linear-gradient(135deg, #ffd166, #ffb347);
+      border-radius: 50%;
+      position: relative;
+      animation: float 3s ease-in-out infinite;
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: -10px;
+        left: -10px;
+        right: -10px;
+        bottom: -10px;
+        background: linear-gradient(135deg, 
+          rgba(255, 209, 102, 0.3),
+          rgba(255, 179, 71, 0.1));
+        border-radius: 50%;
+        animation: pulseGlow 2s ease-in-out infinite;
+      }
+
+      i {
+        font-size: 3.5rem;
+        color: white;
+        animation: spin 20s linear infinite;
+      }
+    }
+
+    .empty-text {
+      h4 {
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+        @include gradient-text;
+        font-weight: 700;
+      }
+
+      p {
+        color: #6b7280;
+        font-size: 1.1rem;
+        margin: 0;
+      }
+    }
+  }
+
+  .empty-actions {
+    margin-top: 2rem;
+    
+    .btn-gradient {
+      background: $primary-gradient;
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: $radius-md;
+      font-weight: 600;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: $transition-smooth;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(67, 97, 238, 0.4);
+      }
+
+      i {
+        font-size: 1.2rem;
+      }
+    }
+  }
+}
+
+// Заголовок списка
+.list-header {
+  @include glass-effect;
+  border-radius: $radius-lg;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  animation: slideDown 0.4s ease-out;
+
+  .stats {
+    display: flex;
+    gap: 2rem;
+
+    .stat-item {
+      text-align: center;
+      
+      .stat-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        @include gradient-text;
+        line-height: 1;
+      }
+
+      .stat-label {
+        font-size: 0.9rem;
+        color: #6b7280;
+        margin-top: 0.25rem;
+      }
+    }
+  }
+
+  .list-filters {
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+
+      label {
+        font-weight: 600;
+        color: #374151;
+      }
+
+      .filter-select {
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: $radius-sm;
+        padding: 0.5rem 1rem;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: $transition-smooth;
+        min-width: 160px;
+
+        &:focus {
+          outline: none;
+          border-color: #4361ee;
+          box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        }
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: stretch;
+
+    .stats {
+      justify-content: space-around;
+      
+      .stat-item {
+        .stat-value {
+          font-size: 2rem;
+        }
+      }
+    }
+  }
+}
+
+// Сетка карточек отпусков
+.vacations-grid {
+  @include responsive-grid(2);
+  gap: 1.5rem;
+}
+
+// Карточка отпуска
+.vacation-card {
+  @include glass-effect;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  transition: $transition-smooth;
+  animation: fadeInUp 0.5s ease-out;
+  position: relative;
+  
+  // Анимация при наведении
+  &:hover {
+    transform: translateY(-8px) scale(1.01);
+    box-shadow: $shadow-deep;
+    
+    .card-header::before {
+      opacity: 1;
+    }
+  }
+
+  // Статусные границы
+  &.pending {
+    border-top: 4px solid #f59e0b;
+  }
+  
+  &.approved {
+    border-top: 4px solid #10b981;
+  }
+  
+  &.active {
+    border-top: 4px solid #3b82f6;
+  }
+  
+  &.rejected {
+    border-top: 4px solid #ef4444;
+  }
+
+  // Заголовок карточки
+  .card-header {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, 
+      rgba(248, 250, 252, 0.8),
+      rgba(241, 245, 249, 0.6));
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      opacity: 0.5;
+      transition: $transition-smooth;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+
+      .avatar {
+        width: 56px;
+        height: 56px;
+        @include flex-center;
+        border-radius: 50%;
+        color: white;
+        font-weight: 700;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      .user-details {
+        flex: 1;
+        
+        .user-name {
+          margin: 0;
+          font-size: 1.3rem;
+          font-weight: 700;
+          color: #1f2937;
+          line-height: 1.2;
+        }
+
+        .user-meta {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.75rem;
+          margin-top: 0.5rem;
+          
+          span {
+            font-size: 0.85rem;
+            color: #6b7280;
+            padding: 0.25rem 0.75rem;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 12px;
+          }
+        }
+      }
+    }
+
+    .vacation-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+
+      .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        color: white;
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+
+        i {
+          font-size: 0.9rem;
+        }
+      }
+
+      .dates {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #6b7280;
+        font-size: 0.9rem;
+        
+        i {
+          color: #9ca3af;
+        }
+      }
+    }
+  }
+
+  // Тело карточки
+  .card-body {
+    padding: 1.5rem;
+
+    .vacation-details {
+      .detail-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
+
+        .detail-item {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          color: #4b5563;
+          font-weight: 500;
+
+          i {
+            color: #9ca3af;
+            font-size: 0.9rem;
+          }
+        }
+      }
+
+      .comment-section {
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        background: rgba(0, 0, 0, 0.02);
+        border-radius: $radius-sm;
+        border-left: 3px solid #4361ee;
+
+        .comment-header {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          color: #4b5563;
+          font-weight: 600;
+          margin-bottom: 0.5rem;
+          font-size: 0.9rem;
+
+          i {
+            color: #4361ee;
+          }
+        }
+
+        .comment-text {
+          margin: 0;
+          color: #6b7280;
+          font-size: 0.95rem;
+          line-height: 1.5;
+        }
+      }
+
+      .card-actions {
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #e5e7eb;
+
+        .action-buttons {
+          display: flex;
+          gap: 1rem;
+          margin-bottom: 1rem;
+
+          button {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: none;
+            border-radius: $radius-sm;
+            font-weight: 600;
+            cursor: pointer;
+            transition: $transition-smooth;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+
+            &:hover {
+              transform: translateY(-2px);
+            }
+
+            &.btn-approve {
+              background: $success-gradient;
+              color: white;
+              box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+
+              &:hover {
+                box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+              }
+            }
+
+            &.btn-reject {
+              background: $danger-gradient;
+              color: white;
+              box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+
+              &:hover {
+                box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+              }
+            }
+          }
+        }
+
+        .action-hint {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          color: #9ca3af;
+          font-size: 0.85rem;
+          text-align: center;
+          justify-content: center;
+
+          i {
+            color: #4361ee;
+          }
+        }
+      }
+
+      .approval-info {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-top: 1rem;
+        padding: 1rem;
+        background: rgba(16, 185, 129, 0.05);
+        border-radius: $radius-sm;
+        border-left: 3px solid #10b981;
+
+        .approver, .approval-date {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-size: 0.9rem;
+          color: #065f46;
+
+          i {
+            color: #10b981;
+          }
+        }
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    .card-header {
+      .user-info {
+        flex-direction: column;
+        text-align: center;
+
+        .user-details {
+          .user-meta {
+            justify-content: center;
+          }
+        }
+      }
+
+      .vacation-meta {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+
+    .card-body {
+      .vacation-details {
+        .detail-row {
+          justify-content: center;
+        }
+
+        .card-actions {
+          .action-buttons {
+            flex-direction: column;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Подсказка для списка
+.list-tip {
+  @include glass-effect;
+  border-radius: $radius-lg;
+  padding: 1rem 1.5rem;
+  margin-top: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  color: #6b7280;
+  font-size: 0.9rem;
+  animation: fadeIn 0.6s ease-out;
+
+  i {
+    color: #4361ee;
+    animation: bounce 2s infinite;
+  }
+}
+
+// Футер
+.modal-footer {
+  padding: 1.5rem 2rem;
+  background: white;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  .footer-actions {
+    display: flex;
+    gap: 1rem;
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border-radius: $radius-md;
+      font-weight: 600;
+      cursor: pointer;
+      transition: $transition-smooth;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border: none;
+      font-size: 0.95rem;
+
+      &:hover {
+        transform: translateY(-2px);
+      }
+
+      &.btn-secondary {
+        background: #f3f4f6;
+        color: #374151;
+
+        &:hover {
+          background: #e5e7eb;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+      }
+
+      &.btn-primary {
+        background: $primary-gradient;
+        color: white;
+
+        &:hover {
+          box-shadow: 0 6px 20px rgba(67, 97, 238, 0.3);
+        }
+      }
+    }
+  }
+
+  .footer-info {
+    .info-text {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #6b7280;
+      font-size: 0.9rem;
+
+      i {
+        color: #4361ee;
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    text-align: center;
+
+    .footer-actions {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .footer-info {
+      .info-text {
+        justify-content: center;
+      }
+    }
+  }
+}
+
+// Анимации
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUpModal {
+  from {
+    opacity: 0;
+    transform: translateY(50px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.5;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes neonGlow {
+  0% {
+    background-position: 0% 50%;
+    opacity: 0.3;
+  }
+  50% {
+    background-position: 100% 50%;
+    opacity: 0.5;
+  }
+  100% {
+    background-position: 0% 50%;
+    opacity: 0.3;
+  }
+}
+
+// Адаптация для мобильных
+@media (max-width: 576px) {
+  .day-details-modal {
+    border-radius: $radius-md;
+    margin: 0.5rem;
+    max-height: 95vh;
+    
+    &::before {
+      border-radius: $radius-md + 2px;
+    }
+  }
+
+  .modal-header {
+    padding: 1.5rem;
+
+    .header-content {
+      flex-direction: column;
+      text-align: center;
+      gap: 1rem;
+
+      .header-icon {
+        width: 50px;
+        height: 50px;
+        
+        i {
+          font-size: 1.5rem;
+        }
+      }
+
+      .header-text {
+        h3 {
+          font-size: 1.4rem;
+        }
+
+        .header-subtitle {
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+      }
+    }
+
+    .close-btn {
+      top: 1rem;
+      right: 1rem;
+      width: 36px;
+      height: 36px;
+    }
+  }
+
+  .modal-body {
+    padding: 1.5rem;
+    max-height: calc(95vh - 150px);
+  }
+
+  .vacations-grid {
+    gap: 1rem;
+  }
+
+  .vacation-card {
+    .card-header,
+    .card-body {
+      padding: 1.25rem;
+    }
+  }
+
+  .list-header {
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1.25rem;
+
+    .stats {
+      width: 100%;
+      justify-content: space-around;
+      
+      .stat-item {
+        .stat-value {
+          font-size: 1.8rem;
+        }
+      }
+    }
+
+    .list-filters {
+      width: 100%;
+      
+      .filter-group {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+      }
+    }
+  }
+
+  .modal-footer {
+    padding: 1.25rem;
+    flex-direction: column;
+    gap: 1rem;
+
+    .footer-actions {
+      flex-direction: column;
+      width: 100%;
+      
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  }
+}
+
+// Поддержка высокого контраста
+@media (prefers-contrast: high) {
+  .vacation-card {
+    border: 2px solid currentColor;
+  }
+
+  .status-badge {
+    border: 1px solid white;
+  }
+
+  .btn {
+    border: 2px solid currentColor;
+  }
+}
+
+// Поддержка уменьшенного движения
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

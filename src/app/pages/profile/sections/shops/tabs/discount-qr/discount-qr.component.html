@@ -1,0 +1,157 @@
+<!-- discount-qr.component.html -->
+<div class="discount-container">
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-content">
+      <div class="header-title">
+        <h1 class="title">Управление QR кодами</h1>
+        <p class="subtitle">Список пользователей и их QR коды</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Filters -->
+  <div class="filters-section">
+    <div class="filter-group">
+      <label class="filter-label">Фильтр по статусам</label>
+      <div class="chips-container">
+        <div *ngFor="let status of statusOptions" class="chip" [class.active]="isStatusSelected(status)"
+          (click)="toggleStatus(status)">
+          {{ status.label }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Users Table -->
+  <div class="table-container">
+    <div class="table-wrapper">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>ФИО</th>
+            <th>Почта</th>
+            <th>Телефон</th>
+            <th>Город</th>
+            <th>QR код</th>
+            <th>Документ</th>
+            <th>Статус</th>
+            <th>Действия</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of filteredUsers" class="user-row">
+            <!-- ФИО -->
+            <td class="fio-cell">
+              <div class="user-fio">{{ user.fio || 'Не указано' }}</div>
+            </td>
+
+                      <td class="fio-cell">
+              <div class="user-fio">{{ user.email || 'Не указано' }}</div>
+            </td>
+
+
+            <!-- Телефон -->
+            <td class="phone-cell">
+              <div class="user-phone">{{ user.phone || 'Не указан' }}</div>
+            </td>
+
+            <!-- Город -->
+            <td class="city-cell">
+              <div class="user-city">{{ user.city || 'Не указан' }}</div>
+            </td>
+
+            <!-- QR код -->
+            <td class="qr-cell" (dblclick)="editQr(user)">
+              <div class="qr-content">
+                <div *ngIf="editingQrUser !== user.id; else editQrTemplate" class="qr-value" [title]="user.qr">
+                  {{ user.qr || 'Не указан' }}
+                </div>
+
+                <ng-template #editQrTemplate>
+                  <div class="qr-edit">
+                    <input type="text" [(ngModel)]="editingQrValue" class="qr-input" placeholder="Введите QR код"
+                      (keyup.enter)="saveQr(user)" (keyup.escape)="cancelEdit()">
+                    <div class="qr-actions">
+                      <button class="btn-icon success" (click)="saveQr(user)" title="Сохранить">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                        </svg>
+                      </button>
+                      <button class="btn-icon danger" (click)="cancelEdit()" title="Отмена">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                          <path
+                            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </ng-template>
+              </div>
+            </td>
+
+            <!-- Документ -->
+            <td class="document-cell">
+              <button *ngIf="user.document_path" class="download-btn" (click)="downloadFile(user.document_path)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+                </svg>
+                Скачать
+              </button>
+              <span *ngIf="!user.document_path" class="no-document">Нет документа</span>
+            </td>
+
+            <!-- Статус -->
+            <td class="status-cell">
+              <select class="status-select" [value]="user.status.value" (change)="onStatusChange(user, $event)">
+                <option *ngFor="let status of statusOptions" [value]="status.value"
+                  [selected]="user.status.value === status.value">
+                  {{ status.label }}
+                </option>
+              </select>
+            </td>
+
+            <!-- Действия -->
+            <td class="actions-cell">
+              <div class="actions-container">
+                <button class="btn-icon danger" (click)="deleteUser(user.id)" title="Удалить пользователя">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Empty State -->
+      <div *ngIf="filteredUsers.length === 0" class="empty-state">
+        <div class="empty-content">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+          </svg>
+          <h3>Пользователи не найдены</h3>
+          <p>Попробуйте изменить фильтры или проверьте список пользователей</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="error-notification">
+    <div class="error-content">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+      </svg>
+      <span>{{ errorMessage }}</span>
+      <button class="close-error" (click)="errorMessage = ''">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path
+            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>

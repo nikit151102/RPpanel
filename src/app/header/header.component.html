@@ -1,0 +1,320 @@
+<!-- header.component.html -->
+<header class="header">
+  <div class="header-container">
+    <!-- Логотип и кнопка меню для мобильных -->
+    <div class="logo-section">
+      <!-- Кнопка гамбургер-меню для мобильных -->
+      <button class="mobile-menu-toggle" (click)="toggleMobileMenu()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M4 6h16M4 12h16M4 18h16" 
+                stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      
+      <a routerLink="/dashboard" class="logo">
+        <span class="logo-text">пакетон.рф</span>
+      </a>
+    </div>
+
+    <!-- Основное меню для десктопа -->
+    <nav class="nav-menu desktop-menu">
+      <ul class="menu-list">
+        <!-- Динамические микрофронты -->
+        @for (microfrontend of microfrontends; track microfrontend.id) {
+          @if (microfrontend.is_active && this.hasAccessToMicrofrontend(microfrontend)) {
+            <li class="menu-item has-dropdown"
+                [class.active]="isRouteActive('/' + microfrontend.route)"
+                [class.open]="microfrontend.isDropdownOpen">
+              
+              <a class="menu-link" (click)="toggleMicrofrontendDropdown(microfrontend, $event)">
+                <div class="menu-icon-wrapper">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M4 6h16M4 12h16M4 18h16" 
+                          stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <span class="menu-text">{{ microfrontend.name }}</span>
+                <span class="dropdown-arrow" [class.rotated]="microfrontend.isDropdownOpen">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M6 9l6 6 6-6" 
+                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </span>
+              </a>
+
+              <!-- Вкладки микрофронта -->
+              @if (microfrontend.isDropdownOpen && microfrontend.tabs.length) {
+                <div class="dropdown-backdrop" (click)="closeAllDropdowns()"></div>
+                <ul class="dropdown-menu">
+                  <div class="dropdown-header">
+                    <h3>{{ microfrontend.name }}</h3>
+                    <div class="dropdown-divider"></div>
+                  </div>
+                  
+                  @for (tab of microfrontend.tabs; track tab.id) {
+                    @if (tab.is_active && tab.has_access) {
+                      <li class="dropdown-item" [class.has-children]="tab.children.length">
+                        <a 
+                          [routerLink]="['/profile', microfrontend.route, tab.route]"
+                          class="dropdown-link"
+                          (click)="closeAllDropdowns()"
+                          [class.disabled]="!tab.has_access">
+                          
+                          <div class="dropdown-icon">
+                            <div class="icon-dot"></div>
+                          </div>
+                          
+                          <div class="dropdown-content">
+                            <span class="dropdown-text">{{ tab.name }}</span>
+                            @if (tab.children.length) {
+                              <span class="children-count">{{ tab.children.length }}</span>
+                            }
+                          </div>
+
+                          @if (tab.children.length) {
+                            <span class="children-indicator">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                                <path d="M9 6l6 6-6 6" 
+                                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                              </svg>
+                            </span>
+                          }
+                        </a>
+
+                        <!-- Дочерние элементы вкладки -->
+                        @if (tab.children.length) {
+                          <ul class="nested-dropdown">
+                            @for (child of tab.children; track child.id) {
+                              @if (child.is_active && child.has_access) {
+                                <li class="nested-item">
+                                  <a 
+                                    [routerLink]="'/' + microfrontend.route + '/' + tab.route + '/' + child.route" 
+                                    class="nested-link"
+                                    (click)="closeAllDropdowns()">
+                                    
+                                    <div class="nested-icon">
+                                      <div class="icon-dot-small"></div>
+                                    </div>
+                                    {{ child.name }}
+                                  </a>
+                                </li>
+                              }
+                            }
+                          </ul>
+                        }
+                      </li>
+                    }
+                  }
+                </ul>
+              }
+            </li>
+          }
+        }
+      </ul>
+    </nav>
+
+    <!-- Мобильное меню -->
+    @if (showMobileMenu) {
+      <div class="mobile-menu-overlay" (click)="closeMobileMenu()"></div>
+      <nav class="mobile-menu">
+        <div class="mobile-menu-header">
+          <h3>Меню</h3>
+          <button class="mobile-menu-close" (click)="closeMobileMenu()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M18 6L6 18M6 6l12 12" 
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="mobile-menu-content">
+          @for (microfrontend of microfrontends; track microfrontend.id) {
+            @if (microfrontend.is_active && this.hasAccessToMicrofrontend(microfrontend)) {
+              <div class="mobile-menu-item" 
+                   [class.open]="mobileOpenStates[microfrontend.id]">
+                
+                <button class="mobile-menu-button" 
+                        (click)="toggleMobileSubmenu(microfrontend.id)">
+                  <span class="mobile-menu-text">{{ microfrontend.name }}</span>
+                  <span class="mobile-menu-arrow" 
+                        [class.rotated]="mobileOpenStates[microfrontend.id]">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                      <path d="M6 9l6 6 6-6" 
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </span>
+                </button>
+
+                <!-- Вкладки микрофронта для мобильных -->
+                @if (mobileOpenStates[microfrontend.id] && microfrontend.tabs.length) {
+                  <div class="mobile-submenu">
+                    @for (tab of microfrontend.tabs; track tab.id) {
+                      @if (tab.is_active && tab.has_access) {
+                        <div class="mobile-submenu-item"
+                             [class.has-children]="tab.children.length"
+                             [class.open]="mobileTabOpenStates[tab.id]">
+                          
+                          <button class="mobile-submenu-button"
+                                  (click)="toggleMobileTab(tab.id, microfrontend.route, tab)">
+                            <div class="mobile-submenu-content">
+                              <span class="mobile-submenu-text">{{ tab.name }}</span>
+                              @if (tab.children.length) {
+                                <span class="mobile-children-count">{{ tab.children.length }}</span>
+                              }
+                            </div>
+                            @if (tab.children.length) {
+                              <span class="mobile-submenu-arrow"
+                                    [class.rotated]="mobileTabOpenStates[tab.id]">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                                  <path d="M9 6l6 6-6 6" 
+                                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                              </span>
+                            }
+                          </button>
+
+                          <!-- Дочерние элементы для мобильных -->
+                          @if (tab.children.length && mobileTabOpenStates[tab.id]) {
+                            <div class="mobile-nested-menu">
+                              @for (child of tab.children; track child.id) {
+                                @if (child.is_active && child.has_access) {
+                                  <a class="mobile-nested-item"
+                                     [routerLink]="'/' + microfrontend.route + '/' + tab.route + '/' + child.route"
+                                     (click)="closeMobileMenu()">
+                                    {{ child.name }}
+                                  </a>
+                                }
+                              }
+                            </div>
+                          }
+                        </div>
+                      }
+                    }
+                  </div>
+                }
+              </div>
+            }
+          }
+        </div>
+
+        <!-- Профиль в мобильном меню -->
+        <div class="mobile-profile-section">
+          <div class="mobile-user-info">
+            <div class="mobile-user-avatar">
+              {{ getUserInitials() }}
+            </div>
+            <div class="mobile-user-details">
+              <span class="mobile-user-name">{{ user?.name || getUserName() }}</span>
+              <span class="mobile-user-role">{{ userRole || 'Пользователь' }}</span>
+            </div>
+          </div>
+          <button class="mobile-logout-button" (click)="logout(); closeMobileMenu()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" 
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Выйти
+          </button>
+        </div>
+      </nav>
+    }
+
+    <!-- Правая часть (профиль) -->
+    <div class="header-actions">
+      <!-- Уведомления -->
+      <div class="action-item">
+        <button class="action-button" (click)="toggleNotifications()">
+          <div class="notification-bell">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" 
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            @if (unreadNotifications > 0) {
+              <span class="notification-dot"></span>
+            }
+          </div>
+        </button>
+      </div>
+
+      <!-- Профиль -->
+      <div class="profile-wrapper">
+        <button class="profile-button" (click)="toggleProfileMenu($event)">
+          <div class="user-avatar">
+            <div class="avatar-placeholder">
+              {{ getUserInitials() }}
+            </div>
+          </div>
+          <div class="user-info">
+            <span class="user-name">{{ user?.name || getUserName() }}</span>
+            <span class="user-role">{{ userRole || 'Пользователь' }}</span>
+          </div>
+          <span class="dropdown-arrow" [class.rotated]="showProfileMenu">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M6 9l6 6 6-6" 
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+        </button>
+
+        <!-- Меню профиля -->
+        @if (showProfileMenu) {
+          <div class="dropdown-backdrop" (click)="closeAllDropdowns()"></div>
+          <div class="profile-dropdown">
+            <div class="profile-header">
+              <div class="user-avatar large">
+                <div class="avatar-placeholder">
+                  {{ getUserInitials() }}
+                </div>
+              </div>
+              <div class="profile-info">
+                <h3 class="profile-name">{{ user?.name || getUserName() }}</h3>
+                <p class="profile-email">{{ user?.email || 'user@example.com' }}</p>
+                <div class="profile-badge">{{ userRole || 'Пользователь' }}</div>
+              </div>
+            </div>
+            
+            <div class="dropdown-divider"></div>
+            
+            <div class="profile-menu">
+              <a class="profile-menu-item">
+                <div class="menu-item-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" 
+                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+                <span>Мой профиль</span>
+              </a>
+              
+              <a class="profile-menu-item">
+                <div class="menu-item-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" 
+                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" 
+                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+                <span>Настройки</span>
+              </a>
+            </div>
+            
+            <div class="dropdown-divider"></div>
+            
+            <div class="profile-actions">
+              <button class="logout-button" (click)="logout()">
+                <div class="logout-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" 
+                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+                <span>Выйти из системы</span>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</header>

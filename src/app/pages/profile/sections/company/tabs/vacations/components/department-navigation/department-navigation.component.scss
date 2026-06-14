@@ -1,0 +1,99 @@
+$primary-color: #4361ee;
+$secondary-color: #6c757d;
+$border-radius: 12px;
+$box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+$transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+.department-navigation {
+  margin-bottom: 2rem;
+  animation: fadeIn 0.6s ease-out;
+
+  .nav-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    background: white;
+    padding: 0.75rem;
+    border-radius: $border-radius;
+    box-shadow: $box-shadow;
+
+    .nav-tab {
+      padding: 0.75rem 1.25rem;
+      border: none;
+      background: transparent;
+      border-radius: 8px;
+      color: $secondary-color;
+      font-weight: 500;
+      transition: $transition;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+
+      &:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: $primary-color;
+        opacity: 0;
+        transition: $transition;
+        z-index: 0;
+      }
+
+      i, span {
+        position: relative;
+        z-index: 1;
+      }
+
+      .badge {
+        margin-left: 0.5rem;
+        padding: 0.25em 0.6em;
+        font-size: 0.75em;
+        border-radius: 12px;
+        transition: $transition;
+        color: white;
+      }
+
+      &:hover {
+        color: $primary-color;
+
+        &:before {
+          opacity: 0.05;
+        }
+
+        .badge {
+          transform: scale(1.1);
+        }
+      }
+
+      &.active {
+        color: white;
+
+        &:before {
+          opacity: 1;
+        }
+
+        .badge {
+          background: white !important;
+          color: $primary-color;
+        }
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    .nav-tabs {
+      overflow-x: auto;
+      flex-wrap: nowrap;
+      padding-bottom: 0.5rem;
+
+      .nav-tab {
+        white-space: nowrap;
+      }
+    }
+  }
+}

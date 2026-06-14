@@ -1,0 +1,28 @@
+<div class="reference-container">
+    <!-- Основная навигация -->
+    <nav class="modern-nav">
+        <div class="nav-scroll-container">
+            <div class="nav-items">
+                <a *ngFor="let counterparty of references" (click)="select(counterparty.id)"
+                    [class.active]="counterparty.id === selectedId" class="nav-item">
+                    <div class="nav-item-content">
+                        <span class="nav-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path [attr.d]="counterparty.iconPath" />
+                            </svg>
+                        </span>
+                        <span class="nav-label">{{ counterparty.label }}</span>
+                    </div>
+                    <div class="nav-indicator"></div>
+                </a>
+            </div>
+        </div>
+        <div class="nav-bottom-line"></div>
+    </nav>
+
+
+    
+    <div class="content-area">
+        <app-reference-book [typeId]="selectReference" [referenceConfig]="referenceConfig"></app-reference-book>
+    </div>
+</div>

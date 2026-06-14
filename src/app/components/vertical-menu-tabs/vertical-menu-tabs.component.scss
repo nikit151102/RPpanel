@@ -1,0 +1,484 @@
+// Боковое меню для десктопа
+.sidebar {
+    width: 280px;
+    height: 100vh;
+    background: white;
+    border-right: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+    z-index: 100;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    flex-shrink: 0;
+
+    @media (max-width: 768px) {
+        display: none;
+    }
+
+    &.collapsed {
+        width: 72px;
+
+        .logo-text {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .menu-text {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(-10px);
+        }
+
+        .toggle-sidebar {
+            transform: rotate(180deg);
+        }
+    }
+}
+
+// Стили для десктопного меню (остаются без изменений)
+.sidebar-header {
+    padding: 24px 20px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    min-height: 80px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #1a202c;
+    text-decoration: none;
+    transition: all 0.3s ease;
+
+    svg {
+        color: #667eea;
+        flex-shrink: 0;
+    }
+}
+
+.logo-text {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.toggle-sidebar {
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 8px;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+        transform: scale(1.05);
+    }
+}
+
+.sidebar-menu {
+    list-style: none;
+    margin: 0;
+    padding: 16px 8px;
+    flex: 1;
+}
+
+.menu-item {
+    margin: 4px 8px;
+    position: relative;
+
+    &.active {
+        .menu-link {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            border-radius: 8px;
+
+            .menu-icon svg {
+                color: #667eea;
+            }
+        }
+
+        .active-indicator {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 20px;
+            background: #667eea;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+    }
+}
+
+.menu-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    color: #4a5568;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+
+    &:hover {
+        background: #f7fafc;
+        color: #2d3748;
+        transform: translateX(2px);
+
+        .menu-icon svg {
+            color: #667eea;
+        }
+    }
+}
+
+.menu-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+
+    svg {
+        color: #718096;
+        transition: color 0.2s ease;
+    }
+}
+
+.menu-text {
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    overflow: hidden;
+
+    &.hidden {
+        opacity: 0;
+        visibility: hidden;
+        transform: translateX(-10px);
+    }
+}
+
+// Мобильное меню
+.mobile-nav {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-bottom: 1px solid #e2e8f0;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+
+    @media (max-width: 768px) {
+        display: block;
+    }
+}
+
+.mobile-nav-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: white;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.mobile-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #1a202c;
+
+    svg {
+        color: #667eea;
+    }
+}
+
+.mobile-logo-text {
+    font-size: 18px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.mobile-menu-toggle {
+    background: none;
+    border: none;
+    width: 32px;
+    height: 32px;
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 6px;
+
+    span {
+        display: block;
+        height: 2px;
+        background: #4a5568;
+        border-radius: 1px;
+        transition: all 0.3s ease;
+        transform-origin: center;
+    }
+
+    &.active {
+        span:nth-child(1) {
+            transform: rotate(45deg) translate(6px, 6px);
+        }
+
+        span:nth-child(2) {
+            opacity: 0;
+        }
+
+        span:nth-child(3) {
+            transform: rotate(-45deg) translate(6px, -6px);
+        }
+    }
+}
+
+.mobile-nav-scroll {
+    position: relative;
+    background: white;
+    transition: max-height 0.3s ease;
+    overflow: hidden;
+
+    &.collapsed {
+        max-height: 0;
+    }
+
+    &:not(.collapsed) {
+        max-height: 80px;
+    }
+}
+
+.mobile-nav-container {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 8px 16px;
+    scroll-behavior: smooth;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+.mobile-menu {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 4px;
+    min-width: min-content;
+}
+
+.mobile-menu-item {
+    flex-shrink: 0;
+
+    &.active {
+        .mobile-menu-link {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            border-color: #667eea;
+
+            .mobile-menu-icon svg {
+                color: #667eea;
+            }
+        }
+
+        .mobile-active-indicator {
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 3px;
+            background: #667eea;
+            border-radius: 2px;
+        }
+    }
+}
+
+.mobile-menu-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 12px;
+    color: #4a5568;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    position: relative;
+    min-width: 70px;
+    background: #f8fafc;
+
+    &:active {
+        transform: scale(0.95);
+    }
+
+    &:hover {
+        background: #e2e8f0;
+    }
+}
+
+.mobile-menu-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+
+    svg {
+        color: #718096;
+        transition: color 0.2s ease;
+    }
+}
+
+.mobile-menu-text {
+    font-size: 11px;
+    font-weight: 500;
+    text-align: center;
+    white-space: nowrap;
+    line-height: 1.2;
+}
+
+// Индикаторы скролла
+.scroll-indicator {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.2s ease;
+
+    &.left {
+        left: 8px;
+    }
+
+    &.right {
+        right: 8px;
+    }
+
+    &:active {
+        transform: translateY(-50%) scale(0.9);
+    }
+
+    svg {
+        color: #667eea;
+        width: 16px;
+        height: 16px;
+    }
+}
+
+// Overlay для мобильного меню
+.mobile-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    animation: fadeIn 0.3s ease;
+
+    @media (min-width: 769px) {
+        display: none;
+    }
+}
+
+// Анимации
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+// Отступ для контента при мобильном меню
+:host {
+    display: block;
+
+    @media (max-width: 768px) {
+        padding-top: 65px; // Высота мобильного меню + отступ
+    }
+}
+
+// Улучшения для очень маленьких экранов
+@media (max-width: 480px) {
+    .mobile-nav-header {
+        padding: 10px 12px;
+    }
+
+    .mobile-logo-text {
+        font-size: 16px;
+    }
+
+    .mobile-menu-link {
+        padding: 6px 8px;
+        min-width: 60px;
+    }
+
+    .mobile-menu-text {
+        font-size: 10px;
+    }
+
+    .mobile-nav-scroll:not(.collapsed) {
+        max-height: 70px;
+    }
+}
+
+// Поддержка landscape режима
+@media (max-width: 768px) and (orientation: landscape) {
+    .mobile-nav-scroll:not(.collapsed) {
+        max-height: 60px;
+    }
+
+    .mobile-menu-link {
+        flex-direction: row;
+        gap: 6px;
+        min-width: auto;
+        padding: 6px 10px;
+    }
+
+    .mobile-menu-text {
+        font-size: 12px;
+    }
+}

@@ -1,0 +1,165 @@
+<div class="dialog-overlay" [class.visible]="isDialogVisible" (click)="onDocumentClick($event)">
+  <div class="dialog-container" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="dialog-header">
+      <h2 class="dialog-title">
+        {{ isEditMode ? 'Редактирование инцидента' : 'Создание инцидента' }}
+      </h2>
+      <button class="close-button" (click)="onCancelEdit()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="dialog-content">
+      <form [formGroup]="incidentForm" (ngSubmit)="onSubmit()" class="form">
+
+        <!-- Основные поля -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="date" class="form-label">
+              Дата <span class="required">*</span>
+            </label>
+            <input id="date" type="date" formControlName="date" class="form-input"
+              [class.invalid]="incidentForm.get('date')?.invalid && incidentForm.get('date')?.touched">
+            <div class="error-message" *ngIf="incidentForm.get('date')?.invalid && incidentForm.get('date')?.touched">
+              Пожалуйста, укажите дату
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="contractor" class="form-label">
+              Контрагент <span class="required">*</span>
+            </label>
+            <input id="contractor" type="text" formControlName="contractor" class="form-input"
+              placeholder="Введите название контрагента"
+              [class.invalid]="incidentForm.get('contractor')?.invalid && incidentForm.get('contractor')?.touched">
+            <div class="error-message"
+              *ngIf="incidentForm.get('contractor')?.invalid && incidentForm.get('contractor')?.touched">
+              Пожалуйста, укажите контрагента
+            </div>
+          </div>
+        </div>
+
+        <!-- Детали -->
+        <div class="form-group">
+          <label for="details" class="form-label">
+            Детали <span class="required">*</span>
+          </label>
+          <textarea id="details" formControlName="details" rows="3" class="form-textarea"
+            placeholder="Опишите детали инцидента..."
+            [class.invalid]="incidentForm.get('details')?.invalid && incidentForm.get('details')?.touched"></textarea>
+          <div class="error-message"
+            *ngIf="incidentForm.get('details')?.invalid && incidentForm.get('details')?.touched">
+            Пожалуйста, опишите детали инцидента
+          </div>
+        </div>
+
+        <!-- Тип причины -->
+        <div class="form-group">
+          <label for="reason_type_id" class="form-label">
+            Тип причины <span class="required">*</span>
+          </label>
+          <select id="reason_type_id" formControlName="reason_type_id" class="form-select"
+            [class.invalid]="incidentForm.get('reason_type_id')?.invalid && incidentForm.get('reason_type_id')?.touched">
+            <option value="">Выберите тип причины</option>
+            <option *ngFor="let reason of reasonTypes" [value]="reason.id">
+              {{ reason.name }}
+            </option>
+          </select>
+          <div class="error-message"
+            *ngIf="incidentForm.get('reason_type_id')?.invalid && incidentForm.get('reason_type_id')?.touched">
+            Пожалуйста, выберите тип причины
+          </div>
+        </div>
+
+        <!-- Список товаров -->
+        <div class="items-section">
+          <label class="section-label">Товары</label>
+
+          <div formArrayName="items" class="items-list">
+            <div *ngFor="let item of items.controls; let i = index" [formGroupName]="i" class="item-card">
+
+              <div class="item-header">
+                <div class="item-product">
+                  <label class="form-label">Товар <span class="required">*</span></label>
+                  <div class="search-wrapper">
+                    <input type="text" formControlName="product_search" class="form-input"
+                      placeholder="Начните вводить название товара..." (input)="onProductSearch(i, $event)"
+                      (focus)="onProductFocus(i)">
+
+                    <div class="dropdown" *ngIf="showDropdown[i]">
+                      <div class="dropdown-content" #dropdownContent (scroll)="onDropdownScroll(i, $event)">
+                        <div *ngFor="let product of filteredProducts[i]" class="dropdown-item"
+                          [class.new-product]="product.is_new" (click)="selectProduct(i, product)">
+                          {{ product.name }}
+                        </div>
+
+                        <!-- Индикатор загрузки -->
+                        <div *ngIf="pagination[i]?.loading" class="dropdown-loading">
+                          Загрузка...
+                        </div>
+
+                        <!-- Сообщение о наличии еще товаров -->
+                        <div *ngIf="pagination[i]?.hasMore && !pagination[i]?.loading" class="dropdown-more">
+                          Прокрутите для загрузки еще товаров
+                        </div>
+
+                        <!-- Сообщение когда нет результатов и нет опции создания -->
+                        <div *ngIf="filteredProducts[i]?.length === 0 && !pagination[i]?.loading"
+                          class="dropdown-item no-results">
+                          Товар не найден. Введите название для создания нового товара.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <button type="button" class="remove-button" (click)="removeItem(i)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                      d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                  </svg>
+                </button>
+              </div>
+
+              <div class="item-details">
+                <div class="form-group small">
+                  <label class="form-label">Количество <span class="required">*</span></label>
+                  <input type="number" formControlName="quantity" class="form-input" min="1" placeholder="0"
+                    (input)="onQuantityInput(i, $event)">
+                </div>
+
+                <div class="form-group small">
+                  <label class="form-label">Цена <span class="required">*</span></label>
+                  <input type="number" formControlName="amount" class="form-input" min="0" step="0.01"
+                    placeholder="0.00" (input)="onAmountInput(i, $event)">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button type="button" class="add-item-button" (click)="addItem()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+            </svg>
+            Добавить товар
+          </button>
+        </div>
+
+        <!-- Кнопки действий -->
+        <div class="dialog-actions">
+          <button type="button" class="btn btn-secondary" (click)="onCancelEdit()">
+            Отмена
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="incidentForm.invalid">
+            {{ isEditMode ? 'Сохранить' : 'Создать' }}
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>

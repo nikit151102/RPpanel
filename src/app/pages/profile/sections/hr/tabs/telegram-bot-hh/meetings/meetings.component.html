@@ -1,0 +1,363 @@
+<div class="meetings-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-title">
+        <h1>📅 Управление встречами</h1>
+        <p>Планирование встреч и управление расписанием</p>
+      </div>
+      <div class="header-actions">
+        <div class="tab-navigation">
+          <button class="tab-btn" [class.active]="activeTab === 'meetings'" (click)="setActiveTab('meetings')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
+            </svg>
+            Встречи
+          </button>
+          <button class="tab-btn" [class.active]="activeTab === 'slots'" (click)="setActiveTab('slots')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
+            </svg>
+            Недоступные слоты
+          </button>
+        </div>
+        <button class="btn btn-primary" *ngIf="activeTab === 'meetings'" (click)="openDefaultMeetingModal()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+          </svg>
+          Создать встречу
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Meetings Tab -->
+  <div *ngIf="activeTab === 'meetings'" class="tab-content">
+    <!-- Statistics -->
+    <div class="stats-grid" *ngIf="meetings.length > 0">
+      <div class="stat-card">
+        <div class="stat-icon total">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
+          </svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ meetings.length }}</div>
+          <div class="stat-label">Всего встреч</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon upcoming">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z" />
+          </svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ getUpcomingMeetingsCount() }}</div>
+          <div class="stat-label">Предстоящие</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Meetings Table -->
+    <div class="table-container">
+      <div class="table-header">
+        <h3>Список встреч</h3>
+        <div class="table-actions">
+          <button class="btn btn-outline" (click)="refreshData()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
+            </svg>
+            Обновить
+          </button>
+        </div>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th class="date-cell">Дата</th>
+              <th class="time-cell">Время</th>
+              <th class="user-cell">Кандидат</th>
+              <th class="phone-cell">Телефон</th>
+              <th class="links-cell">Ссылки</th>
+              <th class="actions-cell">Действия</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let meeting of meetings" class="table-row">
+              <!-- Date -->
+              <td class="date-cell">
+                <div class="date-display">
+                  <div class="date-day">{{ getDay(meeting.meeting_date) }}</div>
+                  <div class="date-month">{{ getMonth(meeting.meeting_date) }}</div>
+                </div>
+              </td>
+
+              <!-- Time -->
+              <td class="time-cell">
+                <div class="time-range">
+                  <span class="start-time">{{ meeting.start_time }}</span>
+                  <span class="time-separator">—</span>
+                  <span class="end-time">{{ meeting.end_time }}</span>
+                </div>
+              </td>
+
+              <!-- User Info -->
+              <td class="user-cell">
+                <div class="user-info">
+                  <div class="user-name">
+                    {{ meeting.user?.last_name }} {{ meeting.user?.first_name }} {{ meeting.user?.middle_name }}
+                  </div>
+                  <div class="user-status" *ngIf="!meeting.user">
+                    <span class="status-badge new">Новый кандидат</span>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Phone -->
+              <td class="phone-cell">
+                <div class="phone-number">
+                  {{ formatPhoneNumber(meeting.phone) || '—' }}
+                </div>
+              </td>
+
+              <!-- Links -->
+              <td class="links-cell">
+                <div class="links-container">
+                  <a *ngIf="meeting.admin_link && meeting.admin_link !== 'http://example.com/'"
+                    [href]="meeting.admin_link" target="_blank" class="link-btn admin" title="Ссылка администратора">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path
+                        d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z" />
+                    </svg>
+                    Админ
+                  </a>
+                  <a *ngIf="meeting.user_link && meeting.user_link !== 'http://example.com/'" [href]="meeting.user_link"
+                    target="_blank" class="link-btn user" title="Ссылка пользователя">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path
+                        d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
+                    </svg>
+                    Пользователь
+                  </a>
+                  <span *ngIf="!meeting.admin_link && !meeting.user_link" class="no-links">
+                    Нет ссылок
+                  </span>
+                </div>
+              </td>
+
+              <!-- Actions -->
+              <td class="actions-cell">
+                <div class="actions-container">
+                  <button class="btn-icon edit" (click)="editMeeting(meeting)" title="Редактировать встречу">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                      <path
+                        d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+                    </svg>
+                  </button>
+                  <button class="btn-icon delete" (click)="deleteMeeting(meeting.id)" title="Удалить встречу">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Empty State -->
+        <div *ngIf="meetings.length === 0" class="empty-state">
+          <div class="empty-icon">📅</div>
+          <h3>Встречи не запланированы</h3>
+          <p>Создайте первую встречу, чтобы начать работу</p>
+          <button class="btn btn-primary" (click)="openDefaultMeetingModal()">
+            Создать встречу
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slots Tab -->
+  <div *ngIf="activeTab === 'slots'" class="tab-content">
+    <div class="slots-layout">
+      <!-- Form Section -->
+      <div class="form-section">
+        <div class="form-card">
+          <h3>{{ isEditingSlot ? '✏️ Редактировать интервал' : '➕ Добавить недоступный интервал' }}</h3>
+          <form [formGroup]="slotForm" (ngSubmit)="onSlotSubmit()" class="form">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Дата</label>
+                <input type="date" class="form-input" formControlName="date" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Время начала</label>
+                <input type="time" class="form-input" formControlName="start_time" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Время окончания</label>
+                <input type="time" class="form-input" formControlName="end_time" required>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" [disabled]="slotForm.invalid">
+                {{ isEditingSlot ? 'Обновить' : 'Добавить' }}
+              </button>
+              <button type="button" class="btn btn-secondary" (click)="resetSlotForm()" *ngIf="isEditingSlot">
+                Отмена
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Slots List -->
+      <div class="slots-section">
+        <div class="table-container">
+          <div class="table-header">
+            <h3>Недоступные интервалы</h3>
+            <div class="table-info" *ngIf="unavailableSlots.length > 0">
+              {{ unavailableSlots.length }} интервалов
+            </div>
+          </div>
+
+          <div class="table-wrapper">
+            <table class="data-table" *ngIf="unavailableSlots.length > 0">
+              <thead>
+                <tr>
+                  <th>Дата</th>
+                  <th>Начало</th>
+                  <th>Окончание</th>
+                  <th>Действия</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let slot of unavailableSlots" class="table-row">
+                  <td class="date-cell">
+                    <div class="date-display">
+                      {{ formatDisplayDate(slot.date) }}
+                    </div>
+                  </td>
+                  <td class="time-cell">
+                    <span class="time-value">{{ slot.start_time }}</span>
+                  </td>
+                  <td class="time-cell">
+                    <span class="time-value">{{ slot.end_time }}</span>
+                  </td>
+                  <td class="actions-cell">
+                    <div class="actions-container">
+                      <button class="btn-icon edit" (click)="editSlot(slot)" title="Редактировать интервал">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                          <path
+                            d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+                        </svg>
+                      </button>
+                      <button class="btn-icon delete" (click)="deleteSlot(slot.id)" title="Удалить интервал">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Empty State -->
+            <div *ngIf="unavailableSlots.length === 0" class="empty-state">
+              <div class="empty-icon">⏰</div>
+              <h3>Недоступные интервалы не заданы</h3>
+              <p>Добавьте интервалы, когда вы недоступны для встреч</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Meeting Modal -->
+<div class="modal-overlay" *ngIf="showDefaultMeetingModal" (click)="closeDefaultMeetingModal()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 class="modal-title">
+        {{ isEditMode ? '✏️ Редактирование встречи' : '➕ Создание встречи' }}
+      </h2>
+      <button class="modal-close" (click)="closeDefaultMeetingModal()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path
+            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+        </svg>
+      </button>
+    </div>
+
+    <form [formGroup]="defaultMeetingForm" (ngSubmit)="onSubmitMeeting()" class="modal-content">
+      <div class="form-section">
+        <h3 class="section-title">📅 Дата и время</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Дата встречи</label>
+            <input type="date" class="form-input" formControlName="meeting_date" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Время начала</label>
+            <input type="time" class="form-input" formControlName="start_time" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Время окончания</label>
+            <input type="time" class="form-input" formControlName="end_time" required>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3 class="section-title">👤 Информация о кандидате</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Фамилия</label>
+            <input type="text" class="form-input" formControlName="last_name" placeholder="Введите фамилию">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Имя</label>
+            <input type="text" class="form-input" formControlName="first_name" placeholder="Введите имя">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Отчество</label>
+            <input type="text" class="form-input" formControlName="middle_name" placeholder="Введите отчество">
+          </div>
+
+          <div class="form-group full-width">
+            <label class="form-label">Телефон</label>
+            <input type="text" class="form-input" formControlName="phone" placeholder="+7 (XXX) XXX-XX-XX">
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" (click)="closeDefaultMeetingModal()">
+          Отмена
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="defaultMeetingForm.invalid">
+          {{ isEditMode ? 'Сохранить изменения' : 'Создать встречу' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

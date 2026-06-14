@@ -1,0 +1,272 @@
+<!-- franchise.component.html -->
+<div class="franchise-container">
+    <!-- Header -->
+    <header class="page-header">
+        <div class="header-content">
+            <div class="header-title">
+                <h1 class="title">Заявки на франшизу</h1>
+                <p class="subtitle">Управление заявками потенциальных франчайзи</p>
+            </div>
+
+            <button class="create-btn" (click)="showDialogCreate(false)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                </svg>
+                Создать заявку
+            </button>
+        </div>
+    </header>
+
+    <!-- Filters -->
+    <div class="filters-section">
+        <div class="filter-group">
+            <label class="filter-label">Фильтр по статусам</label>
+            <div class="chips-container">
+                <div *ngFor="let status of statusOptions" class="chip" [class.active]="isStatusSelected(status)"
+                    (click)="toggleStatus(status)">
+                    {{ status.label }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Table -->
+        <div class="table-container">
+            <div class="table-wrapper">
+                <table class="franchise-table">
+                    <thead>
+                        <tr>
+                            <th>ФИО</th>
+                            <th>Email</th>
+                            <th>Телефон</th>
+                            <th>Тип собственности</th>
+                            <th>Инвестиции</th>
+                            <th>Помещение</th>
+                            <th>Источник</th>
+                            <th>Дата подачи</th>
+                            <th>Статус</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let request of filteredFranchiseRequests" class="request-row">
+                            <!-- ФИО -->
+                            <td class="name-cell">
+                                <div class="user-name">{{ request.full_name || 'Не указано' }}</div>
+                            </td>
+
+                            <!-- Email -->
+                            <td class="email-cell">
+                                <div class="user-email">{{ request.email || 'Не указан' }}</div>
+                            </td>
+
+                            <!-- Телефон -->
+                            <td class="phone-cell">
+                                <div class="user-phone">{{ request.phone || 'Не указан' }}</div>
+                            </td>
+
+                            <!-- Тип собственности -->
+                            <td class="ownership-cell">
+                                <div class="ownership-type">{{ request.ownership_type || 'Не указан' }}</div>
+                            </td>
+
+                            <!-- Инвестиции -->
+                            <td class="investment-cell">
+                                <div class="investment-amount">{{ request.planned_investments || 'Не указаны' }}</div>
+                            </td>
+
+                            <!-- Помещение -->
+                            <td class="premises-cell">
+                                <div class="premises-type" [class.owned]="request.premises_type === 'своё'"
+                                    [class.rented]="request.premises_type === 'арендованное'">
+                                    {{ request.premises_type || 'Не указано' }}
+                                </div>
+                            </td>
+
+                            <!-- Источник -->
+                            <td class="source-cell">
+                                <div class="franchise-source">{{ request.franchise_source || 'Не указан' }}</div>
+                            </td>
+
+                            <!-- Дата подачи -->
+                            <td class="date-cell">
+                                <div class="submission-date">{{ request.date_submitted | date:'dd.MM.yyyy' }}</div>
+                            </td>
+
+                            <!-- Статус -->
+                            <td class="status-cell">
+                                <select class="status-select" [value]="request.status"
+                                    (change)="onStatusChange(request, $event)">
+                                    <option value="">Выберите статус</option>
+                                    <option *ngFor="let status of statusOptions" [value]="status.value"
+                                        [selected]="request.status === status.value">
+                                        {{ status.label }}
+                                    </option>
+                                </select>
+                            </td>
+
+                            <!-- Действия -->
+                            <td class="actions-cell">
+                                <div class="actions-container">
+                                    <button class="btn-icon edit" (click)="showDialogCreate(true, request)"
+                                        title="Редактировать">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                            <path
+                                                d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+                                        </svg>
+                                    </button>
+
+                                    <button class="btn-icon delete" (click)="deleteFranchiseRequest(request.id)"
+                                        title="Удалить">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                            <path
+                                                d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- Empty State -->
+                <div *ngIf="filteredFranchiseRequests.length === 0" class="empty-state">
+                    <div class="empty-content">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z" />
+                        </svg>
+                        <h3>Заявки не найдены</h3>
+                        <p>Попробуйте изменить фильтры или создайте первую заявку</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Modal Dialog -->
+<div class="modal-overlay" [class.visible]="visible">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2 class="modal-title">{{ isEdit ? 'Редактирование заявки' : 'Создание заявки' }}</h2>
+            <button class="close-button" (click)="closeModal()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+            </button>
+        </div>
+
+        <form class="modal-form" (ngSubmit)="isEdit ? updateFranchiseRequest() : createFranchiseRequest()">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">
+                        ФИО
+                        <span class="required">*</span>
+                    </label>
+                    <input type="text" class="form-input" [(ngModel)]="newRequest.full_name" name="full_name"
+                        placeholder="Введите полное имя" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Телефон
+                        <span class="required">*</span>
+                    </label>
+                    <input type="tel" class="form-input" [(ngModel)]="newRequest.phone" name="phone"
+                        placeholder="+7 (XXX) XXX-XX-XX" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Email
+                        <span class="required">*</span>
+                    </label>
+                    <input type="email" class="form-input" [(ngModel)]="newRequest.email" name="email"
+                        placeholder="email@example.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Тип собственности
+                        <span class="required">*</span>
+                    </label>
+                    <select class="form-select" [(ngModel)]="newRequest.ownership_type" name="ownership_type" required>
+                        <option value="">Выберите тип собственности</option>
+                        <option value="ТОО">Товарищество с ограниченной ответственностью</option>
+                        <option value="ООО">ООО (Общество с ограниченной ответственностью)</option>
+                        <option value="ИП">ИП (Индивидуальный предприниматель)</option>
+                        <option value="ЗАО">ЗАО (Закрытое акционерное общество)</option>
+                        <option value="ОАО">ОАО (Открытое акционерное общество)</option>
+                        <option value="АО">АО (Акционерное общество)</option>
+                        <option value="НКО">НКО (Некоммерческая организация)</option>
+                        <option value="Государственная корпорация">Государственная корпорация</option>
+                        <option value="Общественная организация">Общественная организация</option>
+                        <option value="Товарищество">Товарищество</option>
+                        <option value="КФХ">КФХ (Крестьянское (фермерское) хозяйство)</option>
+                        <option value="ФГБУ">ФГБУ (Федеральное государственное бюджетное учреждение)</option>
+                        <option value="ОГБУ">ОГБУ (Областное государственное бюджетное учреждение)</option>
+                        <option value="Государственное предприятие">Государственное предприятие</option>
+                        <option value="Муниципальное предприятие">Муниципальное предприятие</option>
+                        <option value="ПК">ПК (Производственный кооператив)</option>
+                        <option value="ТНВ">Товарищество на вере</option>
+                        <option value="Корпорация">Корпорация</option>
+                        <option value="Ассоциация">Ассоциация</option>
+                        <option value="Консорциум">Консорциум</option>
+                        <option value="Партнерство">Партнерство</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Тип помещения
+                        <span class="required">*</span>
+                    </label>
+                    <select class="form-select" [(ngModel)]="newRequest.premises_type" name="premises_type" required>
+                        <option value="">Выберите тип помещения</option>
+                        <option value="своё">Своё</option>
+                        <option value="арендованное">Арендованное</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Планируемые инвестиции
+                        <span class="required">*</span>
+                    </label>
+                    <input type="text" class="form-input" [(ngModel)]="newRequest.planned_investments"
+                        name="planned_investments" placeholder="Введите сумму инвестиций" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Источник франшизы
+                        <span class="required">*</span>
+                    </label>
+                    <input type="text" class="form-input" [(ngModel)]="newRequest.franchise_source"
+                        name="franchise_source" placeholder="Откуда узнали о франшизе" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Дата подачи
+                        <span class="required">*</span>
+                    </label>
+                    <input type="date" class="form-input" [(ngModel)]="newRequest.date_submitted" name="date_submitted"
+                        required>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" (click)="closeModal()">
+                    Отмена
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    {{ isEdit ? 'Обновить' : 'Создать' }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

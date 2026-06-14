@@ -1,0 +1,120 @@
+<div class="admin-dashboard">
+    <div class="header">
+        <h1>Карта доставок</h1>
+        <div class="controls">
+            <label class="upload-btn">
+                Загрузить Excel
+                <input type="file" id="excelFile" accept=".xlsx, .xls" (change)="onFileUpload($event)">
+            </label>
+            <button class="clear-btn" (click)="clearAll()" *ngIf="deliveryPoints.length">Очистить всё</button>
+        </div>
+    </div>
+
+    <div class="status-bar" *ngIf="loadStatus || stats.total">
+        <div class="status-text">{{ loadStatus }}</div>
+        <div class="stats" *ngIf="stats.total">
+            <span class="total">Всего: {{ stats.total }}</span>
+            <span class="found">Найдено: {{ stats.found }}</span>
+            <span class="not-found">Не найдено: {{ stats.notFound }}</span>
+        </div>
+    </div>
+
+    <!-- Фильтр по водителям -->
+    <div class="filter-bar" *ngIf="drivers.length > 0">
+        <div class="filter-label">Фильтр по водителю:</div>
+        <div class="filter-buttons">
+            <button class="filter-btn" [class.active]="selectedDriver === 'all'" (click)="filterByDriver('all')">
+                Все ({{ deliveryPoints.length }})
+            </button>
+            <button *ngFor="let driver of drivers" class="filter-btn" [class.active]="selectedDriver === driver"
+                [style.background]="getDriverMarkerColor(driver)" (click)="filterByDriver(driver)">
+                <span class="driver-color" [style.background]="getDriverColor(driver)"></span>
+                {{ driver }} ({{ groupedByDriver[driver]?.length || 0 }})
+            </button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="map-container">
+            <div id="map"></div>
+        </div>
+
+        <div class="points-list">
+            <div class="list-header">
+                <h3>Точки доставки</h3>
+                <span class="list-count">{{ getFilteredPoints().length }}</span>
+            </div>
+
+            <div class="points-scroll">
+                <!-- Группировка по водителям в списке -->
+                <ng-container *ngIf="selectedDriver === 'all'">
+                    <div *ngFor="let driver of drivers" class="driver-group">
+                        <div class="driver-group-header" [style.border-left-color]="getDriverBorderColor(driver)">
+                            <span class="driver-name">{{ driver }}</span>
+                            <span class="driver-count">{{ groupedByDriver[driver]?.length || 0 }}</span>
+                        </div>
+                        <div class="point-card" *ngFor="let point of groupedByDriver[driver]"
+                            [class.not-found]="!point.lat" (click)="centerOnPoint(point)">
+                            <!-- содержимое карточки -->
+                            <div class="card-header">
+                                <span class="client-name">{{ point.client || 'Не указан' }}</span>
+                                <span class="amount">{{ point.amount?.toLocaleString() || 0 }} ₽</span>
+                            </div>
+                            <div class="address">
+                                <span title="{{ point.address }}">{{ point.address | slice:0:60 }}{{
+                                    point.address?.length > 60 ? '...' : '' }}</span>
+                            </div>
+                            <div class="card-footer" *ngIf="point.comment">
+                                <span class="comment-text">{{ point.comment | slice:0:50 }}{{ point.comment?.length > 50
+                                    ? '...' : '' }}</span>
+                            </div>
+                            <div class="not-found-reason" *ngIf="!point.lat">
+                                {{ point.notFoundReason || 'Координаты не определены' }}
+                            </div>
+                            <div class="status-badge" [class.success]="point.lat" [class.error]="!point.lat">
+                                {{ point.lat ? 'На карте' : 'Не найден' }}
+                            </div>
+                        </div>
+                    </div>
+                </ng-container>
+
+                <!-- Отображение при фильтрации по конкретному водителю -->
+                <ng-container *ngIf="selectedDriver !== 'all'">
+                    <div class="point-card" *ngFor="let point of getFilteredPoints()" [class.not-found]="!point.lat"
+                        (click)="centerOnPoint(point)">
+                        <div class="card-header">
+                            <span class="client-name">{{ point.client || 'Не указан' }}</span>
+                            <span class="amount">{{ point.amount?.toLocaleString() || 0 }} ₽</span>
+                        </div>
+                        <div class="address">
+                            <span title="{{ point.address }}">{{ point.address | slice:0:60 }}{{ point.address?.length >
+                                60 ? '...' : '' }}</span>
+                        </div>
+                        <div class="driver-info">
+                            <span>{{ point.driver || 'Водитель не назначен' }}</span>
+                        </div>
+                        <div class="card-footer" *ngIf="point.comment">
+                            <span class="comment-text">{{ point.comment | slice:0:50 }}{{ point.comment?.length > 50 ?
+                                '...' : '' }}</span>
+                        </div>
+                        <div class="not-found-reason" *ngIf="!point.lat">
+                            {{ point.notFoundReason || 'Координаты не определены' }}
+                        </div>
+                        <div class="status-badge" [class.success]="point.lat" [class.error]="!point.lat">
+                            {{ point.lat ? ' На карте' : ' Не найден' }}
+                        </div>
+                    </div>
+                </ng-container>
+
+                <div class="empty-list" *ngIf="deliveryPoints.length === 0 && !isLoading">
+                    📭 Загрузите Excel файл для отображения точек доставки
+                </div>
+
+                <div class="loading-spinner" *ngIf="isLoading">
+                    <div class="spinner"></div>
+                    <span>{{ loadStatus }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

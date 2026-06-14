@@ -1,0 +1,22 @@
+@import '../modal-base.scss';
+
+.alert-danger {
+  background: rgba(239, 71, 111, 0.1);
+  color: #8a1a35;
+  border-left: 4px solid #ef476f;
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #ef476f, #e0345a);
+  border: none;
+
+  &:hover:not(:disabled) {
+    background: linear-gradient(135deg, #e0345a, #c92a4a);
+    transform: translateY(-2px);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}

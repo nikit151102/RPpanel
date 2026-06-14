@@ -1,0 +1,111 @@
+<!-- feedback.component.html -->
+<div class="feedback-container">
+  <!-- Header -->
+  <header class="feedback-header">
+    <h1 class="title">Обратная связь</h1>
+    <p class="subtitle">Управление обращениями клиентов</p>
+  </header>
+
+  <!-- Table -->
+  <div class="table-container">
+    <table class="feedback-table">
+      <thead>
+        <tr>
+          <th>Фамилия Имя Отчество</th>
+          <th>Телефон</th>
+          <th>Почта</th>
+          <th class="status-column">Статус</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let feedBack of paginatedFeedbacks" class="feedback-row">
+          <td class="name-cell">
+            <div class="name-value">{{ feedBack.fio }}</div>
+          </td>
+          <td class="phone-cell">
+            <div class="phone-value">{{ feedBack.phone }}</div>
+          </td>
+          <td class="email-cell">
+            <div class="email-value">{{ feedBack.email }}</div>
+          </td>
+          <td class="status-cell">
+            <div class="status-dropdown-wrapper">
+              <div class="status-dropdown" (click)="toggleDropdown(feedBack.id)">
+                <span class="status-value">{{ selectedStatuses[feedBack.id] || 'Выберите статус' }}</span>
+                <span class="dropdown-icon">▼</span>
+              </div>
+              <div class="status-dropdown-menu" *ngIf="dropdownStates[feedBack.id]">
+                <div *ngFor="let status of statuses" 
+                     class="status-option"
+                     (click)="selectStatus(feedBack, status)">
+                  <span class="status-indicator" [class]="status.code"></span>
+                  {{ status.name }}
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+
+        <!-- Empty State -->
+        <tr *ngIf="feedBacks.length === 0" class="empty-row">
+          <td colspan="4">
+            <div class="empty-state">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
+              </svg>
+              <h3>Обращения не найдены</h3>
+              <p>На данный момент нет обращений от клиентов</p>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="feedBacks.length > 0">
+      <div class="pagination-info">
+        Показано {{ startIndex + 1 }}-{{ endIndex }} из {{ feedBacks.length }} обращений
+      </div>
+      
+      <div class="pagination-controls">
+        <button class="pagination-btn" 
+                [disabled]="currentPage === 1" 
+                (click)="previousPage()"
+                title="Предыдущая страница">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+          </svg>
+        </button>
+        
+        <div class="page-numbers">
+          <span class="page-info">Страница {{ currentPage }} из {{ totalPages }}</span>
+        </div>
+        
+        <button class="pagination-btn" 
+                [disabled]="currentPage === totalPages" 
+                (click)="nextPage()"
+                title="Следующая страница">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="rows-per-page">
+        <label>Показывать:</label>
+        <select [(ngModel)]="rowsPerPage" (change)="onRowsPerPageChange()" class="rows-select">
+          <option value="10">10</option>
+          <option value="25">25</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-overlay">
+    <div class="loading-spinner"></div>
+    <span>Загрузка обращений...</span>
+  </div>
+</div>

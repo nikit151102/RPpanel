@@ -1,0 +1,221 @@
+<div class="vacation-management" *ngIf="currentUser">
+  <!-- Уведомления -->
+  <app-notifications 
+    [notifications]="notifications"
+    (removeNotification)="removeNotification($event)">
+  </app-notifications>
+
+  <!-- Заголовок и управление доступом -->
+  <app-header
+    [currentUser]="currentUser"
+    [isDirector]="isDirector"
+    [isDeputyDirector]="isDeputyDirector"
+    [isStoreManager]="isStoreManager"
+    [managedStoreName]="managedStoreName"
+    [approvalQueue]="approvalQueue"
+    [userStores]="userStores"
+    [isLoading]="isLoading"
+    (openCreateVacationModal)="openCreateVacationModal()"
+    (openCreateForUserModal)="openCreateForUserModal()"
+    (openStoreSelectorForManager)="openStoreSelectorForManager()"
+    (refreshData)="refreshData()">
+  </app-header>
+
+  <!-- Дашборд с карточками -->
+  <app-dashboard
+    [vacations]="vacations"
+    [approvedVacationsCount]="approvedVacationsCount"
+    [pendingVacationsCount]="pendingVacationsCount"
+    [activeVacationsCount]="activeVacationsCount">
+  </app-dashboard>
+
+  <!-- Навигация по отделам -->
+  <app-department-navigation
+    [departments]="departments"
+    [activeDepartment]="activeDepartment"
+    (setActiveDepartment)="activeDepartment = $event">
+  </app-department-navigation>
+
+  <!-- Поиск и фильтры -->
+  <app-filters
+    [searchTerm]="searchTerm"
+    [selectedStatus]="selectedStatus"
+    [selectedType]="selectedType"
+    [showCalendarView]="showCalendarView"
+    [vacationStatuses]="vacationStatuses"
+    [vacationTypes]="vacationTypes"
+    (searchChange)="searchTerm = $event; onFilterChange()"
+    (statusChange)="selectedStatus = $event; onFilterChange()"
+    (typeChange)="selectedType = $event; onFilterChange()"
+    (clearFilters)="searchTerm = ''; selectedStatus = ''; selectedType = ''; onFilterChange()"
+    (toggleView)="showCalendarView = $event">
+  </app-filters>
+
+  <!-- Загрузка -->
+  <div *ngIf="isLoading" class="loading-overlay">
+    <div class="spinner-container">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Загрузка...</span>
+      </div>
+      <p class="mt-3">Загрузка данных...</p>
+    </div>
+  </div>
+
+  <!-- Табличный вид -->
+  <app-vacations-table
+    *ngIf="!showCalendarView"
+    [vacations]="filteredVacations"
+    [vacationStatuses]="vacationStatuses"
+    [vacationTypes]="vacationTypes"
+    [currentUser]="currentUser"
+    [managedStore]="managedStore"
+    [isDirector]="isDirector"
+    [isDeputyDirector]="isDeputyDirector"
+    [isStoreManager]="isStoreManager"
+    (openApproveModal)="openApproveModal($event)"
+    (openRejectModal)="openRejectModal($event)"
+    (openCancelModal)="openCancelModal($event)"
+    (openTransferModal)="openTransferModal($event)"
+    (openUserSummary)="openUserSummary($event)"
+    (openCheckLimitsModal)="openCheckLimitsModal($event)">
+  </app-vacations-table>
+
+  <!-- Календарный вид -->
+  <app-calendar-view
+    *ngIf="showCalendarView"
+    [vacations]="filteredVacations"
+    [vacationStatuses]="vacationStatuses"
+    [currentUser]="currentUser"
+    [isDirector]="isDirector"
+    [isDeputyDirector]="isDeputyDirector"
+    [isStoreManager]="isStoreManager"
+    [managedStore]="managedStore"
+    (openDayDetails)="openDayDetails($event)"
+    (openApproveModal)="openApproveModal($event)">
+  </app-calendar-view>
+
+  <!-- ========== МОДАЛЬНЫЕ ОКНА ========== -->
+
+  <!-- Создание отпуска для себя -->
+  <app-create-vacation-modal
+    *ngIf="modalState.showCreateVacation"
+    [vacationForm]="vacationForm"
+    [vacationTypes]="vacationTypes"
+    [isLoading]="isLoading"
+    (close)="closeAllModals()"
+    (submit)="createVacation()">
+  </app-create-vacation-modal>
+
+  <!-- Создание отпуска для сотрудника -->
+  <app-create-user-vacation-modal
+    *ngIf="modalState.showCreateForUser"
+    [vacationForUserForm]="vacationForUserForm"
+    [users]="users"
+    [vacationTypes]="vacationTypes"
+    [vacationForUser]="vacationForUser"
+    [selectedPeriodForUser]="selectedPeriodForUser"
+    [availableWeeksUser]="availableWeeksUser"
+    [isLoading]="isLoading"
+    [isLoadingWeeks]="isLoadingWeeks"
+    (close)="closeAllModals()"
+    (userSelect)="onUserSelectForVacation()"
+    (selectPeriod)="selectPeriodForUser($event)"
+    (openWeekSelector)="openWeekSelectorForUser()"
+    (openCheckLimits)="openCheckLimitsModal()"
+    (selectWeek)="selectWeekForUser($event)"
+    (submit)="createVacationForUser()">
+  </app-create-user-vacation-modal>
+
+  <!-- Утверждение отпуска -->
+  <app-approve-modal
+    *ngIf="modalState.showApprove && currentVacation"
+    [currentVacation]="currentVacation"
+    [vacationTypes]="vacationTypes"
+    [isLoading]="isLoading"
+    (close)="closeAllModals()"
+    (approve)="approveVacation()">
+  </app-approve-modal>
+
+  <!-- Отклонение отпуска -->
+  <app-reject-modal
+    *ngIf="modalState.showReject && currentVacation"
+    [currentVacation]="currentVacation"
+    [rejectForm]="rejectForm"
+    [isLoading]="isLoading"
+    (close)="closeAllModals()"
+    (reject)="rejectVacation()">
+  </app-reject-modal>
+
+  <!-- Отмена отпуска -->
+  <app-cancel-modal
+    *ngIf="modalState.showCancel && currentVacation"
+    [currentVacation]="currentVacation"
+    [isLoading]="isLoading"
+    (close)="closeAllModals()"
+    (cancel)="cancelVacation()">
+  </app-cancel-modal>
+
+  <!-- Перенос отпуска -->
+  <app-transfer-modal
+    *ngIf="modalState.showTransfer && currentVacation"
+    [currentVacation]="currentVacation"
+    [transferForm]="transferForm"
+    [vacationService]="vacationService"
+    [isLoading]="isLoading"
+    (close)="closeAllModals()"
+    (transferDatesChange)="onTransferDatesChange()"
+    (transfer)="transferVacation()">
+  </app-transfer-modal>
+
+  <!-- Информация о сотруднике -->
+  <app-user-summary-modal
+    *ngIf="modalState.showUserSummary && selectedUser && userVacationSummary"
+    [selectedUser]="selectedUser"
+    [userVacationSummary]="userVacationSummary"
+    [vacationStatuses]="vacationStatuses"
+    [vacationTypes]="vacationTypes"
+    [currentUser]="currentUser"
+    [isDirector]="isDirector"
+    [isDeputyDirector]="isDeputyDirector"
+    [isStoreManager]="isStoreManager"
+    [managedStore]="managedStore"
+    (close)="closeAllModals()"
+    (openCreateForUserModal)="openCreateForUserModal()"
+    (openApproveModal)="openApproveModal($event)">
+  </app-user-summary-modal>
+
+  <!-- Выбор магазина для менеджера -->
+  <app-store-selector-modal
+    *ngIf="modalState.showStoreSelectorForManager"
+    [managerStoreSelectorForm]="managerStoreSelectorForm"
+    [userStores]="userStores"
+    (close)="closeAllModals()"
+    (selectStore)="selectStoreForManager()">
+  </app-store-selector-modal>
+
+  <!-- Проверка ограничений -->
+  <app-limits-check-modal
+    *ngIf="modalState.showVacationLimits"
+    [vacationLimitsCheck]="vacationLimitsCheck"
+    [isLoading]="isLoading"
+    (close)="closeAllModals()"
+    (checkLimits)="checkVacationLimits()">
+  </app-limits-check-modal>
+
+  <!-- Детали дня -->
+  <app-day-details-modal
+    *ngIf="modalState.showDayDetails && selectedDay"
+    [selectedDay]="selectedDay"
+    [selectedDayVacations]="selectedDayVacations"
+    [vacationStatuses]="vacationStatuses"
+    [vacationTypes]="vacationTypes"
+    [currentUser]="currentUser"
+    [isDirector]="isDirector"
+    [isDeputyDirector]="isDeputyDirector"
+    [isStoreManager]="isStoreManager"
+    [managedStore]="managedStore"
+    (close)="closeAllModals()"
+    (openApproveModal)="openApproveModal($event)"
+    (openRejectModal)="openRejectModal($event)">
+  </app-day-details-modal>
+</div>

@@ -1,0 +1,55 @@
+<div class="filter-section">
+  <div class="search-box">
+    <div class="input-group">
+      <span class="input-group-text">
+        <i class="fas fa-search"></i>
+      </span>
+      <input type="text" class="form-control" 
+             [ngModel]="searchTerm" 
+             (ngModelChange)="onSearchChange($event)"
+             placeholder="Поиск по сотрудникам, отделу или комментарию...">
+      <button class="btn btn-outline-secondary" (click)="onClearFilters()" title="Сбросить фильтры">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="filter-controls">
+    <div class="filter-group">
+      <label class="form-label">Статус:</label>
+      <select class="form-select me-2" 
+              [ngModel]="selectedStatus" 
+              (ngModelChange)="onStatusChange($event)">
+        <option value="">Все статусы</option>
+        <option *ngFor="let status of vacationStatuses" [value]="status.value">
+          {{ status.label }}
+        </option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label class="form-label">Тип:</label>
+      <select class="form-select me-2" 
+              [ngModel]="selectedType" 
+              (ngModelChange)="onTypeChange($event)">
+        <option value="">Все типы</option>
+        <option *ngFor="let type of vacationTypes" [value]="type.value">
+          {{ type.label }}
+        </option>
+      </select>
+    </div>
+
+    <div class="view-toggle">
+      <div class="btn-group">
+        <button class="btn btn-sm btn-outline-primary" [class.active]="!showCalendarView" 
+                (click)="onToggleView(false)" title="Табличный вид">
+          <i class="fas fa-table"></i> Таблица
+        </button>
+        <button class="btn btn-sm btn-outline-primary" [class.active]="showCalendarView" 
+                (click)="onToggleView(true)" title="Календарный вид">
+          <i class="fas fa-calendar"></i> Календарь
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,77 @@
+<div class="modal-overlay show">
+  <div class="modal-container modal-lg">
+    <div class="modal-header bg-primary text-white">
+      <h3><i class="fas fa-search me-2"></i>Проверка ограничений</h3>
+      <button class="close-btn text-white" (click)="close.emit()">×</button>
+    </div>
+    
+    <div class="modal-body">
+      <div class="alert alert-info mb-3">
+        <i class="fas fa-info-circle me-2"></i>
+        Проверка возможности отпуска с учетом всех ограничений
+      </div>
+      
+      <div *ngIf="vacationLimitsCheck">
+        <div class="card mb-3" [ngClass]="{
+          'border-success': vacationLimitsCheck.is_available,
+          'border-danger': !vacationLimitsCheck.is_available
+        }">
+          <div class="card-header" [ngClass]="{
+            'bg-success text-white': vacationLimitsCheck.is_available,
+            'bg-danger text-white': !vacationLimitsCheck.is_available
+          }">
+            <h5 class="mb-0">
+              <i class="fas" [ngClass]="{
+                'fa-check-circle': vacationLimitsCheck.is_available,
+                'fa-times-circle': !vacationLimitsCheck.is_available
+              }"></i>
+              {{ vacationLimitsCheck.is_available ? 'Отпуск доступен' : 'Отпуск недоступен' }}
+            </h5>
+          </div>
+          <div class="card-body">
+            <div *ngIf="vacationLimitsCheck.department_check && !vacationLimitsCheck.department_check.allowed" 
+                 class="alert alert-warning">
+              <i class="fas fa-exclamation-triangle me-2"></i>
+              {{ vacationLimitsCheck.department_check.reason }}
+            </div>
+            
+            <div *ngIf="vacationLimitsCheck.store_check && !vacationLimitsCheck.store_check.allowed" 
+                 class="alert alert-warning">
+              <i class="fas fa-store me-2"></i>
+              {{ vacationLimitsCheck.store_check.reason }}
+            </div>
+            
+            <div *ngIf="vacationLimitsCheck.seasonal_check && !vacationLimitsCheck.seasonal_check.allowed" 
+                 class="alert alert-warning">
+              <i class="fas fa-calendar-alt me-2"></i>
+              Сезонные ограничения: {{ vacationLimitsCheck.seasonal_check.reasons?.join(', ') }}
+            </div>
+            
+            <div *ngIf="vacationLimitsCheck.overlap_check && vacationLimitsCheck.overlap_check.has_overlap" 
+                 class="alert alert-warning">
+              <i class="fas fa-exclamation-triangle me-2"></i>
+              Пересечение с существующими отпусками
+            </div>
+            
+            <div *ngIf="vacationLimitsCheck.is_available" class="alert alert-success">
+              <i class="fas fa-check-circle me-2"></i>
+              Все проверки пройдены успешно. Отпуск может быть создан.
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div *ngIf="!vacationLimitsCheck" class="text-center py-5">
+        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+        <p>Заполните данные об отпуске и нажмите "Проверить"</p>
+      </div>
+    </div>
+    
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="close.emit()">Закрыть</button>
+      <button type="button" class="btn btn-primary" (click)="checkLimits.emit()" [disabled]="isLoading">
+        <i class="fas fa-search me-2"></i>Проверить
+      </button>
+    </div>
+  </div>
+</div>

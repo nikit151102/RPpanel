@@ -1,0 +1,83 @@
+@use './components/notifications/notifications.component.scss';
+@use './components/header/header.component.scss';
+@use './components/dashboard/dashboard.component.scss';
+@use './components/department-navigation/department-navigation.component.scss';
+@use './components/filters/filters.component.scss';
+@use './components/vacations-table/vacations-table.component.scss';
+@use './components/calendar-view/calendar-view.component.scss';
+@use './components/modals/create-vacation-modal/create-vacation-modal.component.scss';
+@use './components/modals/create-user-vacation-modal/create-user-vacation-modal.component.scss';
+@use './components/modals/approve-modal/approve-modal.component.scss';
+@use './components/modals/reject-modal/reject-modal.component.scss';
+@use './components/modals/cancel-modal/cancel-modal.component.scss';
+@use './components/modals/transfer-modal/transfer-modal.component.scss';
+@use './components/modals/user-summary-modal/user-summary-modal.component.scss';
+@use './components/modals/store-selector-modal/store-selector-modal.component.scss';
+@use './components/modals/week-selector-modal/week-selector-modal.component.scss';
+@use './components/modals/limits-check-modal/limits-check-modal.component.scss';
+@use './components/modals/day-details-modal/day-details-modal.component.scss';
+@use './components/modals/modal-base.scss';
+
+// Основные стили
+.vacation-management {
+  padding: 1.5rem;
+  min-height: 100vh;
+  animation: fadeIn 0.5s ease-out;
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+// Загрузка
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(5px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+
+  .spinner-container {
+    text-align: center;
+
+    .spinner-border {
+      width: 4rem;
+      height: 4rem;
+      border-width: 0.25em;
+    }
+
+    p {
+      margin-top: 1.5rem;
+      color: #4361ee;
+      font-weight: 500;
+      font-size: 1.1rem;
+    }
+  }
+}
+
+// Общие медиа-запросы
+@media (max-width: 768px) {
+  .vacation-management {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .vacation-management {
+    padding: 0.5rem;
+  }
+}

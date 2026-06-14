@@ -1,0 +1,269 @@
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    padding: 20px;
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-container {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    max-width: 800px;
+    width: 100%;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.3s ease;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: between;
+    padding: 24px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+    flex: 1;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    padding: 8px;
+    border-radius: 8px;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: #f3f4f6;
+        color: #374151;
+    }
+}
+
+.modal-content {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.timeline {
+    position: relative;
+}
+
+.timeline-item {
+    display: flex;
+    margin-bottom: 24px;
+    position: relative;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+
+    &.active {
+        .timeline-dot {
+            background: #3b82f6;
+            border-color: #3b82f6;
+        }
+    }
+}
+
+.timeline-marker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-right: 16px;
+}
+
+.timeline-dot {
+    width: 12px;
+    height: 12px;
+    border: 2px solid #d1d5db;
+    border-radius: 50%;
+    background: white;
+    position: relative;
+    z-index: 2;
+    transition: all 0.3s ease;
+}
+
+.timeline-line {
+    width: 2px;
+    flex: 1;
+    background: #e5e7eb;
+    margin-top: 8px;
+}
+
+.timeline-content {
+    flex: 1;
+    padding-bottom: 8px;
+}
+
+.status-change {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.old-status {
+    color: #6b7280;
+    font-size: 14px;
+    text-decoration: line-through;
+}
+
+.status-arrow {
+    color: #9ca3af;
+    font-weight: 300;
+}
+
+.new-status {
+    font-weight: 600;
+    font-size: 14px;
+    padding: 4px 12px;
+    border-radius: 20px;
+
+    &.Новая {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    &.Не-отработана {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    &.Приостановлена {
+        background: #fef3c7;
+        color: #d97706;
+    }
+}
+
+.change-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 8px;
+}
+
+.change-date {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #6b7280;
+
+    svg {
+        width: 14px;
+        height: 14px;
+    }
+}
+
+.change-time {
+    font-size: 12px;
+    color: #9ca3af;
+    background: #f9fafb;
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+.comment {
+    background: #f8fafc;
+    padding: 12px;
+    border-radius: 8px;
+    border-left: 3px solid #3b82f6;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.comment-label {
+    font-weight: 600;
+    color: #374151;
+    margin-right: 4px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: #6b7280;
+
+    svg {
+        margin-bottom: 16px;
+        opacity: 0.5;
+    }
+
+    h3 {
+        font-size: 18px;
+        margin-bottom: 8px;
+        color: #374151;
+    }
+
+    p {
+        font-size: 14px;
+        margin: 0;
+    }
+}
+
+// Анимации
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+// Адаптивность
+@media (max-width: 640px) {
+    .modal-overlay {
+        padding: 16px;
+    }
+
+    .modal-container {
+        border-radius: 12px;
+    }
+
+    .modal-header,
+    .modal-content {
+        padding: 20px;
+    }
+
+    .status-change {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .status-arrow {
+        display: none;
+    }
+}

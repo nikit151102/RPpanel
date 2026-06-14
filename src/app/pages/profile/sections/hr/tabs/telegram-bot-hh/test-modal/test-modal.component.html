@@ -1,0 +1,120 @@
+<div class="actions-container">
+    <button class="btn btn-primary" (click)="openForCreate()">
+        <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+        </svg>
+        Создать тест
+    </button>
+    
+    <button class="btn btn-success" (click)="onCreateFromExcelClick()">
+        <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+        </svg>
+        Создать из Excel
+    </button>
+    
+    <input #excelInput type="file" accept=".xlsx,.xls" hidden (change)="onExcelFileSelected($event)" />
+</div>
+
+<div class="modal-overlay" [class.active]="showDialog">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 class="modal-title">{{ dialogTitle }}</h2>
+            <button class="modal-close" (click)="showDialog = false">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                </svg>
+            </button>
+        </div>
+
+        <form [formGroup]="testForm" (ngSubmit)="onSubmit()" class="modal-form">
+            <div class="form-row">
+                <div class="form-group full-width">
+                    <label class="form-label">Название теста</label>
+                    <input type="text" formControlName="name" class="form-input" placeholder="Введите название теста">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Кандидат «не подходит»</label>
+                    <input type="number" formControlName="candidate_not_suitable" class="form-input">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Кандидат «рассмотреть»</label>
+                    <input type="number" formControlName="candidate_consider" class="form-input">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Управляющий</label>
+                    <select formControlName="manager" class="form-select">
+                        <option value="">Выберите управляющего</option>
+                        <option *ngFor="let manager of managers" [value]="manager">{{ manager.name }}</option>
+                    </select>
+                </div>
+                
+                <div class="checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" formControlName="is_interview" class="checkbox-input">
+                        <span class="checkbox-custom"></span>
+                        Собеседование
+                    </label>
+                </div>
+            </div>
+
+            <!-- Вопросы -->
+            <div formArrayName="questions" class="questions-container">
+                <div *ngFor="let question of questions.controls; let i = index" [formGroupName]="i" class="question-card">
+                    <div class="question-header">
+                        <h3 class="question-title">Вопрос {{ i + 1 }}</h3>
+                        <button type="button" class="btn btn-danger btn-sm" (click)="removeQuestion(i)">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <input type="text" formControlName="text" class="form-input" placeholder="Текст вопроса">
+                    </div>
+
+                    <!-- Ответы -->
+                    <div formArrayName="answerOptions" class="answers-container">
+                        <div *ngFor="let answer of getAnswers(i).controls; let j = index" [formGroupName]="j" class="answer-row">
+                            <input type="text" formControlName="text" class="form-input answer-input" placeholder="Вариант ответа">
+                            <input type="number" formControlName="score" class="form-input score-input" placeholder="Оценка">
+                            <button type="button" class="btn btn-danger btn-sm" 
+                                    (click)="removeAnswer(i, j)" 
+                                    *ngIf="getAnswers(i).length > 1">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <button type="button" class="btn btn-success btn-text" (click)="addAnswer(i)">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                            </svg>
+                            Добавить ответ
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-secondary" (click)="addQuestion()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                </svg>
+                Добавить вопрос
+            </button>
+
+            <div class="form-footer">
+                <button type="submit" class="btn btn-primary" [disabled]="testForm.invalid">
+                    Сохранить тест
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

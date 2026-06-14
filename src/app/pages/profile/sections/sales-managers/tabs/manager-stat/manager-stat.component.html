@@ -1,0 +1,366 @@
+<div class="dashboard">
+  <!-- Header -->
+
+  <header class="dashboard-header">
+    <div class="header-content">
+      <div class="header-title">
+        <h1 class="title">Дашборд менеджера</h1>
+        <p class="subtitle">Обзор производительности и показателей</p>
+      </div>
+
+      <div class="header-controls">
+        <div class="control-group">
+          <select class="period-select" [(ngModel)]="selectedPeriod" (change)="onPeriodChange()">
+            <option *ngFor="let period of periods" [value]="period">{{ period }}</option>
+          </select>
+
+          <ng-container *ngIf="isAdmin()">
+
+            <button class="settings-btn" (click)="openAdminSettings()">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
+              </svg>
+              Настройки менеджеров и планов
+            </button>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Employee Menu -->
+  <nav class="employee-nav">
+    <div class="nav-container">
+      <div *ngIf="isAdmin()" class="employee-item">
+        <button class="employee-btn" [class.active]="!selectedEmployee" (click)="selectEmployee('')">
+          <span class="employee-name">Все менеджеры</span>
+        </button>
+      </div>
+      <div *ngFor="let emp of employee" class="employee-item">
+        <button class="employee-btn" [class.active]="selectedEmployee === emp.id" (click)="selectEmployee(emp.id)">
+          <span class="employee-name">{{ emp.last_name }} {{ emp.first_name }} {{ emp.middle_name }}</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="dashboard-main">
+    <!-- Statistics Section -->
+    <section class="stats-section">
+      <!-- Plans Statistics -->
+      <div class="stats-card full-width">
+        <div class="card-header">
+          <h3 class="card-title">Статистика по планам</h3>
+
+          <div class="period-info" *ngIf="summaryMonthlyDataPeriod">
+            <span class="period-text">
+              Данные за период: {{ summaryMonthlyDataPeriod.start | date:'d MMMM yyyy' }} - {{
+              summaryMonthlyDataPeriod.end | date:'d MMMM yyyy' }}
+            </span>
+          </div>
+
+        </div>
+
+        <div class="date-filters">
+          <div class="date-input-group">
+            <label>Начало периода</label>
+            <input type="date" [(ngModel)]="startDate" class="date-input">
+          </div>
+          <div class="date-input-group">
+            <label>Конец периода</label>
+            <input type="date" [(ngModel)]="endDate" class="date-input">
+          </div>
+          <button class="filter-btn" (click)="loadSummaryMonthly()">
+            Применить фильтр
+          </button>
+        </div>
+
+        <div class="client-type-filters">
+          <button class="filter-tab" [class.active]="selectedClientType === 'all'" (click)="selectClientType('all')">
+            Все клиенты
+          </button>
+          <button class="filter-tab" [class.active]="selectedClientType === 'new'" (click)="selectClientType('new')">
+            Новые клиенты
+          </button>
+          <button class="filter-tab" [class.active]="selectedClientType === 'active'"
+            (click)="selectClientType('active')">
+            Действующие клиенты
+          </button>
+        </div>
+
+
+        <div class="table-container">
+          <table class="stats-table">
+            <thead>
+              <tr>
+                <th>Менеджер</th>
+                <th>План</th>
+                <th>Факт</th>
+                <th>Выполнение</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of filteredSummary" [class.total-row]="row.employee_name === 'Итого'">
+                <td class="manager-cell">{{ row.employee_name }}</td>
+                <td class="number-cell">{{ row.plan | number:'1.0-0' }}</td>
+                <td class="number-cell">{{ row.fact | number:'1.0-0' }}</td>
+                <td class="progress-cell">
+                  <div class="progress-container">
+                    <div class="progress-bar">
+                      <div class="progress-fill" [style.width.%]="(row.fact / row.plan) * 100"
+                        [class.high]="row.fact >= row.plan"
+                        [class.medium]="row.fact >= row.plan * 0.7 && row.fact < row.plan"
+                        [class.low]="row.fact < row.plan * 0.7">
+                      </div>
+                    </div>
+                    <span class="progress-text">{{ ((row.fact / row.plan) * 100) | number:'1.0-0' }}%</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Metrics Grid -->
+      <div class="metrics-grid">
+        <!-- Sales Volume -->
+        <div class="metric-card">
+          <div class="metric-header">
+            <h4 class="metric-title">Объем продаж</h4>
+            <div class="metric-icon">💰</div>
+          </div>
+          <div class="metric-value">{{ summaryData?.current_period.total_revenue | number:'1.0-0':'ru' }} ₽</div>
+          <div class="metric-comparison">
+            <span class="comparison-label">Прошлый период:</span>
+            <span class="comparison-value">{{ summaryData?.previous_period.total_revenue | number:'1.0-0':'ru' }}
+              ₽</span>
+          </div>
+          <div class="metric-progress">
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="getVolumeProgress()"
+                [class]="getProgressClass(getVolumeProgress())">
+              </div>
+            </div>
+            <div class="progress-label">Прогресс: {{ getVolumeProgress() | number:'1.0-0' }}%</div>
+          </div>
+        </div>
+
+        <!-- Clients -->
+        <div class="metric-card">
+          <div class="metric-header">
+            <h4 class="metric-title">Клиенты</h4>
+            <div class="metric-icon">👥</div>
+          </div>
+          <div class="metric-value">{{ summaryData?.current_period.total_leads }}</div>
+          <div class="metric-comparison">
+            <span class="comparison-label">Изменение:</span>
+            <span class="comparison-value" [class.positive]="employeeStats.growth_leads >= 0"
+              [class.negative]="employeeStats.growth_leads < 0">
+              {{ employeeStats.growth_leads >= 0 ? '+' : '' }}{{ employeeStats.growth_leads | number:'1.0-0':'ru' }}
+              лидов
+            </span>
+          </div>
+          <div class="metric-growth">
+            <span class="growth-percent" [class.positive]="employeeStats.growth_leads_percentage >= 0"
+              [class.negative]="employeeStats.growth_leads_percentage < 0">
+              {{ employeeStats.growth_leads_percentage >= 0 ? '+' : '' }}{{ employeeStats.growth_leads_percentage }}%
+            </span>
+            <span class="growth-label">рост</span>
+          </div>
+        </div>
+
+        <!-- Average Sales -->
+        <div class="metric-card">
+          <div class="metric-header">
+            <h4 class="metric-title">Средние продажи</h4>
+            <div class="metric-icon">📊</div>
+          </div>
+          <div class="metric-value">{{ summaryData?.current_period.average_sale | number:'1.0-0':'ru' }} ₽</div>
+          <div class="metric-comparison">
+            <span class="comparison-label">Прошлый период:</span>
+            <span class="comparison-value">{{ summaryData?.previous_period.average_sale | number:'1.0-0':'ru' }}
+              ₽</span>
+          </div>
+          <div class="metric-progress">
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="getAverageSalesProgress()"
+                [class]="getProgressClass(getAverageSalesProgress())">
+              </div>
+            </div>
+            <div class="progress-label">Прогресс: {{ getAverageSalesProgress() | number:'1.0-0' }}%</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Plans Section -->
+    <section class="plans-section">
+      <div class="plan-card">
+        <div class="plan-header">
+          <h3 class="plan-title">Месячный план</h3>
+          <div class="plan-icon">📅</div>
+        </div>
+        <div class="plan-progress">
+          <div class="progress-bar large">
+            <div class="progress-fill" [style.width.%]="getVolumeProgress()"
+              [class]="getProgressClass(getVolumeProgress())">
+            </div>
+          </div>
+          <div class="plan-details">
+            <div class="plan-amount">
+              <span class="current">{{ summaryData?.current_period.total_revenue | number:'1.0-0':'ru' }} ₽</span>
+              <span class="divider">из</span>
+              <span class="target">{{ monthlyPlan | number:'1.0-0':'ru' }} ₽</span>
+            </div>
+            <div class="plan-goal">🎯 Цель: {{ monthlyPlan | number:'1.0-0':'ru' }} ₽</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="plan-card">
+        <div class="plan-header">
+          <h3 class="plan-title">Годовой план</h3>
+          <div class="plan-icon">🎯</div>
+        </div>
+        <div class="plan-progress">
+          <div class="progress-bar large">
+            <div class="progress-fill" [style.width.%]="getYearlyProgress()"
+              [class]="getProgressClass(getYearlyProgress())">
+            </div>
+          </div>
+          <div class="plan-details">
+            <div class="plan-amount">
+              <span class="current">{{ summaryData?.current_period.total_revenue | number:'1.0-0':'ru' }} ₽</span>
+              <span class="divider">из</span>
+              <span class="target">{{ yearlyPlan | number:'1.0-0':'ru' }} ₽</span>
+            </div>
+            <div class="plan-goal">🎯 Цель: {{ yearlyPlan | number:'1.0-0':'ru' }} ₽</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Employee Ratings -->
+    <section class="ratings-section">
+      <div class="section-header">
+        <h2 class="section-title">Рейтинг сотрудников</h2>
+      </div>
+
+      <!-- Overall Rating -->
+      <div class="rating-category">
+        <h3 class="category-title">Общий рейтинг</h3>
+        <div class="table-container">
+          <table class="ratings-table">
+            <thead>
+              <tr>
+                <th>Место</th>
+                <th>ФИО</th>
+                <th>Отгрузки</th>
+                <th>Выполнение плана</th>
+                <th>Кол-во клиентов</th>
+                <th>Место по отгрузкам</th>
+                <th>Место по клиентам</th>
+                <th>Общий рейтинг</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let emp of employeeRatings['overall']">
+                <td class="rank-cell">{{ emp.ranks.final_rank }}</td>
+                <td class="name-cell">{{ emp.name }}</td>
+                <td class="revenue-cell">
+                  {{ emp.revenue.fact | number:'1.0-0':'ru' }} ₽
+                  <span *ngIf="emp.revenue.year_plan" class="plan-separator">/</span>
+                  <span *ngIf="emp.revenue.year_plan" class="plan-amount">{{ emp.revenue.year_plan | number:'1.0-0':'ru'
+                    }} ₽</span>
+                </td>
+                <td class="progress-cell">
+                  <div class="progress-container">
+                    <div class="progress-bar">
+                      <div class="progress-fill" [style.width.%]="getProgress(emp)"
+                        [class]="getProgressClass(getProgress(emp))">
+                      </div>
+                    </div>
+                    <span class="progress-text">{{ getProgressLabel(emp) }}</span>
+                  </div>
+                </td>
+                <td class="leads-cell">{{ emp.leads.fact | number:'1.0-0':'ru' }}</td>
+                <td class="rank-cell">{{ emp.ranks.revenue_rank }}</td>
+                <td class="rank-cell">{{ emp.ranks.leads_rank }}</td>
+                <td class="final-rank-cell">{{ emp.ranks.final_rank }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Client Type Ratings -->
+      <div class="rating-category" *ngFor="let clientType of clientTypes">
+        <ng-container *ngIf="clientType !== 'overall'">
+          <h3 class="category-title">{{ clientType }}</h3>
+          <div class="table-container">
+            <table class="ratings-table">
+              <thead>
+                <tr>
+                  <th>Место</th>
+                  <th>ФИО</th>
+                  <th>Отгрузки</th>
+                  <th>Выполнение плана</th>
+                  <th>Кол-во клиентов</th>
+                  <th>Место по отгрузкам</th>
+                  <th>Место по клиентам</th>
+                  <th>Общий рейтинг</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let emp of employeeRatings[clientType]">
+                  <td class="rank-cell">{{ emp.ranks.final_rank }}</td>
+                  <td class="name-cell">{{ emp.name }}</td>
+                  <td class="revenue-cell">
+                    {{ emp.revenue.fact | number:'1.0-0':'ru' }} ₽
+                    <span *ngIf="emp.revenue.year_plan" class="plan-separator">/</span>
+                    <span *ngIf="emp.revenue.year_plan" class="plan-amount">{{ emp.revenue.year_plan |
+                      number:'1.0-0':'ru' }} ₽</span>
+                  </td>
+                  <td class="progress-cell">
+                    <div class="progress-container">
+                      <div class="progress-bar">
+                        <div class="progress-fill" [style.width.%]="getProgress(emp)"
+                          [class]="getProgressClass(getProgress(emp))">
+                        </div>
+                      </div>
+                      <span class="progress-text">{{ getProgressLabel(emp) }}</span>
+                    </div>
+                  </td>
+                  <td class="leads-cell">{{ emp.leads.fact | number:'1.0-0':'ru' }}</td>
+                  <td class="rank-cell">{{ emp.ranks.revenue_rank }}</td>
+                  <td class="rank-cell">{{ emp.ranks.leads_rank }}</td>
+                  <td class="final-rank-cell">{{ emp.ranks.final_rank }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </ng-container>
+      </div>
+    </section>
+
+    <!-- Charts Section -->
+    <section class="charts-section">
+      <div class="chart-card full-width">
+        <div class="chart-header">
+          <h3 class="chart-title">Продажи и клиенты по дням</h3>
+        </div>
+        <div class="chart-container">
+          <canvas #lineChart></canvas>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+
+<app-admin-manager [dialogVisible]="showAdminManager" (dialogVisibleChange)="showAdminManager = $event"
+  (closed)="onAdminManagerClosed()">
+</app-admin-manager>

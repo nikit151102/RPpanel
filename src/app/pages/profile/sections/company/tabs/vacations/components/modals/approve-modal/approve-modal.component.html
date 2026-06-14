@@ -1,0 +1,31 @@
+<div class="modal-overlay show">
+  <div class="modal-container">
+    <div class="modal-header bg-success text-white">
+      <h3><i class="fas fa-check-circle me-2"></i>Утверждение отпуска</h3>
+      <button class="close-btn text-white" (click)="close.emit()">×</button>
+    </div>
+    
+    <div class="modal-body" *ngIf="currentVacation">
+      <div class="alert alert-success">
+        <i class="fas fa-info-circle me-2"></i>
+        Вы уверены, что хотите утвердить этот отпуск?
+      </div>
+      
+      <div class="vacation-details">
+        <h6>Детали отпуска:</h6>
+        <p><strong>Сотрудник:</strong> {{ currentVacation.user?.first_name }} {{ currentVacation.user?.last_name }}</p>
+        <p><strong>Период:</strong> {{ formatDisplayDate(currentVacation.start_date) }} - {{ formatDisplayDate(currentVacation.end_date) }}</p>
+        <p><strong>Длительность:</strong> {{ currentVacation.total_days }} дней ({{ currentVacation.work_days }} рабочих)</p>
+        <p><strong>Тип:</strong> {{ getTypeLabel(currentVacation.vacation_type) }}</p>
+        <p><strong>Комментарий:</strong> {{ currentVacation.comment || '—' }}</p>
+      </div>
+    </div>
+    
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="close.emit()">Отмена</button>
+      <button type="button" class="btn btn-success" (click)="approve.emit()" [disabled]="isLoading">
+        <i class="fas fa-check me-2"></i>Утвердить
+      </button>
+    </div>
+  </div>
+</div>

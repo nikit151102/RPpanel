@@ -1,0 +1,43 @@
+<div class="dashboard-cards">
+  <div class="stats-grid">
+    <div class="stats-card bg-primary">
+      <div class="stats-icon">
+        <i class="fas fa-users"></i>
+      </div>
+      <div class="stats-content">
+        <h3>{{ totalVacationsCount }}</h3>
+        <p>Всего отпусков</p>
+      </div>
+    </div>
+
+    <div class="stats-card bg-success">
+      <div class="stats-icon">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <div class="stats-content">
+        <h3>{{ approvedVacationsCount }}</h3>
+        <p>Утверждено</p>
+      </div>
+    </div>
+
+    <div class="stats-card bg-warning">
+      <div class="stats-icon">
+        <i class="fas fa-clock"></i>
+      </div>
+      <div class="stats-content">
+        <h3>{{ pendingVacationsCount }}</h3>
+        <p>На согласовании</p>
+      </div>
+    </div>
+
+    <div class="stats-card bg-info">
+      <div class="stats-icon">
+        <i class="fas fa-sun"></i>
+      </div>
+      <div class="stats-content">
+        <h3>{{ activeVacationsCount }}</h3>
+        <p>Активно сейчас</p>
+      </div>
+    </div>
+  </div>
+</div>

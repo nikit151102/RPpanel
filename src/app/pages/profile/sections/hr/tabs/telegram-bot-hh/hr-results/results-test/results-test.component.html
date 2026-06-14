@@ -1,0 +1,295 @@
+<div class="results-test-container">
+    <!-- Header -->
+    <div class="results-header">
+        <div class="header-content">
+            <div class="header-main">
+                <button class="btn-back" (click)="close.emit()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+                    </svg>
+                    Назад к списку
+                </button>
+                <div class="test-info">
+                    <h1 class="test-title">Результаты тестирования</h1>
+                    <h2 class="test-name">{{ dataTestResult?.test?.name || 'Название теста' }}</h2>
+                    <div class="test-meta">
+                        <span class="meta-item" *ngIf="dataTestResult?.created_at">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z" />
+                                <path d="M12.5 7H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
+                            </svg>
+                            Пройден: {{ formatDate(dataTestResult.created_at) }}
+                        </span>
+                        <span class="meta-item" *ngIf="dataTestResult?.completion_time">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42C16.07 4.74 14.12 4 12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61z" />
+                            </svg>
+                            Время: {{ dataTestResult.completion_time }} мин.
+                        </span>
+                        <span class="meta-item" *ngIf="dataTestResult?.score !== undefined">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                            </svg>
+                            Результат: {{ dataTestResult.score }}%
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-outline" (click)="printResults()" title="Распечатать результаты">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
+                    </svg>
+                    Печать
+                </button>
+                <button class="btn btn-primary" (click)="exportToPDF()" title="Экспорт в PDF">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+                    </svg>
+                    PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Information -->
+    <div class="user-section" *ngIf="dataTestResult?.user">
+        <div class="section-header">
+            <h3 class="section-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                </svg>
+                Информация о кандидате
+            </h3>
+        </div>
+        <div class="user-grid">
+            <div class="user-card">
+                <div class="user-field">
+                    <label class="field-label">Фамилия</label>
+                    <span class="field-value">{{ dataTestResult.user.last_name || 'Не указано' }}</span>
+                </div>
+                <div class="user-field">
+                    <label class="field-label">Имя</label>
+                    <span class="field-value">{{ dataTestResult.user.first_name || 'Не указано' }}</span>
+                </div>
+                <div class="user-field">
+                    <label class="field-label">Отчество</label>
+                    <span class="field-value">{{ dataTestResult.user.middle_name || 'Не указано' }}</span>
+                </div>
+            </div>
+            <div class="user-card">
+                <div class="user-field">
+                    <label class="field-label">Телефон</label>
+                    <span class="field-value">{{ formatPhoneNumber(dataTestResult.user.phone_number) || 'Не указано'
+                        }}</span>
+                </div>
+                <div class="user-field" *ngIf="dataTestResult.user.email">
+                    <label class="field-label">Email</label>
+                    <span class="field-value">{{ dataTestResult.user.email }}</span>
+                </div>
+                <div class="user-field" *ngIf="dataTestResult.score !== undefined">
+                    <label class="field-label">Общий результат</label>
+                    <span class="field-value score">{{ dataTestResult.score }}%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="stats-section" *ngIf="dataTestResult?.answers">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon total">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ dataTestResult.answers.length }}</div>
+                    <div class="stat-label">Всего вопросов</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon answered">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ getAnsweredCount() }}</div>
+                    <div class="stat-label">Отвечено</div>
+                    <div class="stat-percentage">{{ getAnsweredPercentage() }}%</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon skipped">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ getSkippedCount() }}</div>
+                    <div class="stat-label">Пропущено</div>
+                    <div class="stat-percentage">{{ getSkippedPercentage() }}%</div>
+                </div>
+            </div>
+
+            <div class="stat-card" *ngIf="getCorrectAnswersCount() !== null">
+                <div class="stat-icon correct">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ getCorrectAnswersCount() }}</div>
+                    <div class="stat-label">Правильных</div>
+                    <div class="stat-percentage">{{ getCorrectPercentage() }}%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Answers Section -->
+    <div class="answers-section">
+        <div class="section-header">
+            <h3 class="section-title">Детализация ответов</h3>
+            <div class="section-controls">
+                <div class="search-box">
+                    <input type="text" class="search-input" placeholder="Поиск по вопросам..." [(ngModel)]="searchQuery"
+                        >
+                </div>
+                <div class="filter-buttons">
+                    <button class="filter-btn" [class.active]="currentFilter === 'all'" (click)="setFilter('all')">
+                        Все вопросы
+                    </button>
+                    <button class="filter-btn" [class.active]="currentFilter === 'answered'"
+                        (click)="setFilter('answered')">
+                        Отвеченные
+                    </button>
+                    <button class="filter-btn" [class.active]="currentFilter === 'skipped'"
+                        (click)="setFilter('skipped')">
+                        Пропущенные
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Answers List -->
+        <div class="answers-list">
+            <div *ngFor="let answer of filteredAnswers; let i = index" class="answer-card"
+                [class.skipped]="!answer.option && !answer.open_answer" [class.correct]="answer.correct === true"
+                [class.incorrect]="answer.correct === false">
+
+                <div class="answer-header">
+                    <div class="question-number">Вопрос {{ getQuestionNumber(answer) }}</div>
+                    <div class="answer-status">
+                        <span *ngIf="answer.option || answer.open_answer" class="status-badge answered">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                            </svg>
+                            Отвечен
+                        </span>
+                        <span *ngIf="!answer.option && !answer.open_answer" class="status-badge skipped">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                            </svg>
+                            Пропущен
+                        </span>
+                        <span *ngIf="answer.correct === true" class="status-badge correct">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                            </svg>
+                            Правильно
+                        </span>
+                        <span *ngIf="answer.correct === false" class="status-badge incorrect">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                            </svg>
+                            Неправильно
+                        </span>
+                    </div>
+                </div>
+
+                <div class="question-content">
+                    <div class="question-text">{{ answer.question.text }}</div>
+
+                    <div class="answer-content">
+                        <div class="answer-type" *ngIf="answer.option">
+                            <span class="type-label">Выбранный вариант:</span>
+                            <div class="selected-option">
+                                <div class="option-marker"></div>
+                                <div class="option-text">{{ answer.option.text }}</div>
+                            </div>
+                        </div>
+
+                        <div class="answer-type" *ngIf="!answer.option && answer.open_answer">
+                            <span class="type-label">Текстовый ответ:</span>
+                            <div class="open-answer">
+                                <div class="answer-text">{{ answer.open_answer }}</div>
+                            </div>
+                        </div>
+
+                        <div class="answer-type" *ngIf="!answer.option && !answer.open_answer">
+                            <span class="type-label">Статус:</span>
+                            <div class="no-answer">
+                                <div class="no-answer-icon">?</div>
+                                <div class="no-answer-text">Вопрос не был отвечен</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Correct Answer (if available) -->
+                <div class="correct-answer" *ngIf="answer.correct === false && getCorrectAnswer(answer)">
+                    <div class="correct-answer-label">Правильный ответ:</div>
+                    <div class="correct-answer-value">{{ getCorrectAnswer(answer) }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty States -->
+        <div *ngIf="!dataTestResult" class="empty-state loading">
+            <div class="spinner"></div>
+            <h4>Загрузка результатов...</h4>
+            <p>Пожалуйста, подождите</p>
+        </div>
+
+        <div *ngIf="dataTestResult && (!filteredAnswers || filteredAnswers.length === 0)" class="empty-state">
+            <div class="empty-icon">🔍</div>
+            <h4>Ответы не найдены</h4>
+            <p>Попробуйте изменить параметры фильтрации</p>
+        </div>
+
+        <div *ngIf="!dataTestResult?.answers || dataTestResult.answers.length === 0" class="empty-state">
+            <div class="empty-icon">📝</div>
+            <h4>Нет данных об ответах</h4>
+            <p>Информация об ответах на вопросы отсутствует</p>
+        </div>
+    </div>
+
+    <!-- Footer Actions -->
+    <div class="footer-actions">
+        <button class="btn btn-secondary" (click)="close.emit()">
+            Закрыть
+        </button>
+        <button class="btn btn-primary" (click)="exportToPDF()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+            </svg>
+            Экспорт в PDF
+        </button>
+    </div>
+</div>

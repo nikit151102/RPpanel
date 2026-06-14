@@ -1,0 +1,249 @@
+<div class="reference-container">
+    <!-- Заголовок и кнопка добавления -->
+    <div class="page-header">
+        <div class="header-content">
+            <div class="title-section">
+                <h1 class="page-title">{{ currentConfig?.pageTitle || 'Справочник' }}</h1>
+                <p class="page-subtitle">Управление записями справочника</p>
+            </div> 
+            <button *ngIf="currentConfig"  class="add-button" (click)="openCreateModal(currentConfig.endpoint)" >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 5v14m-7-7h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+                Создать запись
+            </button>
+        </div>
+    </div>
+
+    <!-- Карточка с таблицей -->
+    <div class="content-card">
+        <!-- Поиск и фильтры -->
+        <div class="table-controls">
+            <div class="search-box">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" />
+                </svg>
+                <input type="text" placeholder="Поиск..." class="search-input">
+            </div>
+
+            <div class="table-actions">
+                <button class="action-button export">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4m14-7l-5 5m0 0l-5-5m5 5V3" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                    Экспорт
+                </button>
+            </div>
+        </div>
+
+        <!-- Таблица -->
+        <div class="table-container">
+            <table class="modern-table">
+                <thead>
+                    <tr class="header-row">
+                        <ng-container *ngFor="let col of columns">
+                            <th [style.min-width]="col.width" class="sortable">
+                                <div class="header-cell">
+                                    <span>{{ col.label }}</span>
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                                        <path d="M7 15l5 5 5-5M7 9l5-5 5 5" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" />
+                                    </svg>
+                                </div>
+                            </th>
+                        </ng-container>
+                        <th class="actions-header">Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of data; let i = index" class="table-row" [class.even]="i % 2 === 0"
+                        (dblclick)="openEditModal(item)" (contextmenu)="onRightClick($event, item)">
+
+                        <ng-container *ngFor="let col of columns">
+                            <td class="table-cell" [style.width]="col.width">
+                                <ng-container *ngIf="col.field === 'dateTime'; else normalField">
+                                    <span class="date-value">{{ item[col.field] | date: 'dd.MM.yyyy' }}</span>
+                                </ng-container>
+                                <ng-template #normalField>
+                                    <span class="cell-value">
+                                        {{ getNestedValue(item, col.field) || '-' }}
+                                    </span>
+                                </ng-template>
+                            </td>
+                        </ng-container>
+
+                        <td class="table-cell actions-cell">
+                            <div class="action-buttons">
+                                <button class="action-btn edit" (click)="openEditModal(item)" title="Редактировать">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"
+                                            stroke="currentColor" stroke-width="2" />
+                                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"
+                                            stroke="currentColor" stroke-width="2" />
+                                    </svg>
+                                </button>
+                                <button class="action-btn delete" (click)="deleteRecord(item.id)" title="Удалить">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                        <path
+                                            d="M3 6h18m-2 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"
+                                            stroke="currentColor" stroke-width="2" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Пустое состояние -->
+                    <tr *ngIf="!data || data.length === 0">
+                        <td [attr.colspan]="columns.length + 1" class="empty-state">
+                            <div class="empty-content">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+                                    <path
+                                        d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"
+                                        stroke="currentColor" stroke-width="2" />
+                                </svg>
+                                <h3>Нет данных</h3>
+                                <p>Создайте первую запись, нажав на кнопку выше</p>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Модальное окно добавления/редактирования -->
+    @if (isModalOpen && currentConfig) {
+    <div class="modal-overlay" (click)="closeModal()">
+        <div class="modal-container" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h2 class="modal-title">{{ modalTitle }}</h2>
+                <button class="close-button" (click)="closeModal()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                </button>
+            </div>
+
+            <form class="modal-form" (ngSubmit)="onSubmit(currentConfig.endpoint)">
+                <div class="form-grid" [class.two-columns]="formFields.length > 4">
+                    <div class="form-group" *ngFor="let field of formFields">
+                        <label *ngIf="field.visible" [for]="field.field" class="form-label">
+                            {{ field.label }}
+                            <span *ngIf="field.required" class="required">*</span>
+                        </label>
+
+                        <input *ngIf="field.type === 'text' && field.visible" [id]="field.field" [name]="field.field"
+                            type="text" class="form-input" [(ngModel)]="modalData[field.field]"
+                            [required]="field.required">
+
+                        <input *ngIf="field.type === 'number' && field.visible" [id]="field.field" [name]="field.field"
+                            type="number" class="form-input" [(ngModel)]="modalData[field.field]"
+                            [required]="field.required">
+
+                        <input *ngIf="field.type === 'date' && field.visible" [id]="field.field" [name]="field.field"
+                            type="date" class="form-input" [(ngModel)]="modalData[field.field]"
+                            [required]="field.required">
+
+                        <!-- Dropdown и другие типы полей можно добавить позже -->
+                        <div *ngIf="field.type === 'Dropdown' && field.visible" class="dropdown-container">
+                            <div class="dropdown-trigger" (click)="toggleDropdown(field.field)">
+                                <span class="dropdown-selected">
+                                    {{ getSelectedDisplayValue(field) || 'Выберите значение' }}
+                                </span>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                    <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" />
+                                </svg>
+                            </div>
+
+                            <div *ngIf="dropdownVisible[field.field]" class="dropdown-list"
+                                [class.dropdown-above]="dropdownAbove">
+                                <div *ngFor="let item of getDropdownData(field.field)" class="dropdown-item"
+                                    (click)="selectDropdownItem(field, item)">
+                                    {{ getItemDisplayValue(field, item) }}
+                                </div>
+                                <div *ngIf="getDropdownData(field.field)?.length === 0" class="dropdown-empty">
+                                    Нет данных
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" (click)="closeModal()">
+                        Отмена
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        {{ modalAction }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    }
+
+    <!-- Модальное окно создания пользователя -->
+    @if (isModalUserCreateOpen) {
+    <div class="modal-overlay" (click)="isModalUserCreateOpen = false">
+        <div class="modal-container" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h2 class="modal-title">Новый пользователь</h2>
+                <button class="close-button" (click)="isModalUserCreateOpen = false">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="modal-content-simple">
+                <div class="info-group">
+                    <label class="info-label">Логин</label>
+                    <p class="info-value">{{ newUser.userName }}</p>
+                </div>
+
+                <div class="info-group">
+                    <label class="info-label">Код доступа</label>
+                    <div class="code-container">
+                        <span *ngFor="let digit of (newUser.initialPassCode + '').split('')" class="code-digit">
+                            {{ digit }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn btn-primary" (click)="isModalUserCreateOpen = false">
+                    Закрыть
+                </button>
+            </div>
+        </div>
+    </div>
+    }
+
+    <!-- Контекстное меню -->
+    @if (contextMenuVisible) {
+    <div class="context-menu" [style.top.px]="contextMenuY" [style.left.px]="contextMenuX">
+        <button class="context-menu-item" (click)="openEditModal(modalData)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor"
+                    stroke-width="2" />
+                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor"
+                    stroke-width="2" />
+            </svg>
+            Изменить
+        </button>
+        <button class="context-menu-item delete" (click)="deleteRecord(modalData.id)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M3 6h18m-2 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"
+                    stroke="currentColor" stroke-width="2" />
+            </svg>
+            Удалить
+        </button>
+    </div>
+    }
+</div>

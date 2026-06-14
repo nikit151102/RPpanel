@@ -1,0 +1,73 @@
+<div class="modal-overlay show">
+  <div class="modal-container">
+    <div class="modal-header bg-primary text-white">
+      <h3><i class="fas fa-plus me-2"></i>Создание отпуска</h3>
+      <button class="close-btn text-white" (click)="close.emit()">×</button>
+    </div>
+    
+    <form [formGroup]="vacationForm" (ngSubmit)="submit.emit()">
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Тип отпуска *</label>
+          <select class="form-select" formControlName="vacation_type">
+            <option *ngFor="let type of getVacationTypes()" [value]="type.value">{{ type.label }}</option>
+          </select>
+          <div *ngIf="vacationForm.get('vacation_type')?.invalid && vacationForm.get('vacation_type')?.touched" 
+               class="text-danger small">
+            Выберите тип отпуска
+          </div>
+        </div>
+        
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Дата начала *</label>
+            <input type="date" class="form-control" formControlName="start_date">
+            <div *ngIf="vacationForm.get('start_date')?.invalid && vacationForm.get('start_date')?.touched" 
+                 class="text-danger small">
+              Укажите дату начала
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Дата окончания *</label>
+            <input type="date" class="form-control" formControlName="end_date">
+            <div *ngIf="vacationForm.get('end_date')?.invalid && vacationForm.get('end_date')?.touched" 
+                 class="text-danger small">
+              Укажите дату окончания
+            </div>
+          </div>
+        </div>
+        
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Всего дней *</label>
+            <input type="number" class="form-control" formControlName="total_days" min="1">
+            <div *ngIf="vacationForm.get('total_days')?.invalid && vacationForm.get('total_days')?.touched" 
+                 class="text-danger small">
+              Минимум 1 день
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Рабочих дней *</label>
+            <input type="number" class="form-control" formControlName="work_days" min="0">
+            <div *ngIf="vacationForm.get('work_days')?.invalid && vacationForm.get('work_days')?.touched" 
+                 class="text-danger small">
+              Укажите количество рабочих дней
+            </div>
+          </div>
+        </div>
+        
+        <div class="mb-3">
+          <label class="form-label">Комментарий</label>
+          <textarea class="form-control" formControlName="comment" rows="3"></textarea>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="close.emit()">Отмена</button>
+        <button type="submit" class="btn btn-primary" [disabled]="isLoading || vacationForm.invalid">
+          <i class="fas fa-check me-2"></i>Создать отпуск
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
