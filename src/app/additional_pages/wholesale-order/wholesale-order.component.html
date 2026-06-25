@@ -1,0 +1,108 @@
+<div class="container mt-4" *ngIf="!isLoading && order; else loadingTpl">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Заявка № {{ order.number }}</h2>
+        <span class="badge" [ngClass]="order.wholesaleOrderStatus === 1 ? 'bg-success' : 'bg-danger'">
+            Статус: {{ order.wholesaleOrderStatus === 1 ? 'Активна' : 'Заблокирована' }}
+        </span>
+    </div>
+
+    <div style="display: flex; gap: 20px;">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Информация о заявке</h5>
+                <p><strong>Дата создания:</strong> {{ order.orderDateTime | date:'dd.MM.yyyy HH:mm' }}</p>
+                <p><strong>Период действия:</strong> с {{ order.beginDateTime | date:'dd.MM.yyyy' }} по {{
+                    order.endDateTime
+                    | date:'dd.MM.yyyy' }}</p>
+                <hr>
+
+                <h6>Контрагент</h6>
+                <p><strong>{{ order.partnerInstance.partner.shortName }}</strong> ({{
+                    order.partnerInstance.partner.fullName
+                    }})</p>
+                <p>ИНН: {{ order.partnerInstance.partner.inn }} | Email: {{ order.partnerInstance.partner.email }}</p>
+
+                <hr>
+
+                <h6>Клиент</h6>
+                <p>{{ getFullName() }}</p>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Документы заявки</h5>
+                <ul class="list-group list-group-flush" *ngIf="order.orderDocuments.length > 0; else noDocs">
+                    <li class="list-group-item d-flex justify-content-between align-items-center"
+                        *ngFor="let doc of order.orderDocuments">
+                        <div>
+                            <i class="bi bi-file-earmark-text me-2"></i>
+                            {{ doc.fileInfo.fileName }}
+                            <small class="text-muted ms-2">(Тип: {{ doc.orderDocumentType }})</small>
+                        </div>
+                        <button class="btn btn-sm btn-outline-primary"
+                            (click)="downloadDocument(doc.fileInfo.url, doc.fileInfo.fileName)">
+                            Скачать
+                        </button>
+                    </li>
+                </ul>
+                <ng-template #noDocs>
+                    <p class="text-muted">Документы пока не загружены.</p>
+                </ng-template>
+            </div>
+        </div>
+
+    </div>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Действия</h5>
+
+            <div class="d-flex flex-wrap gap-3">
+                <div style="display: flex; gap: 10px;">
+                    <div>
+                        <button class="btn btn-success" (click)="file99.click()" [disabled]="isUploading">
+                            <span *ngIf="isUploading" class="spinner-border spinner-border-sm me-1"></span>
+                            Подписать договор
+                        </button>
+                        <input type="file" #file99 (change)="uploadDocument(99, $event)" hidden
+                            accept=".pdf,.doc,.docx,.jpg,.png">
+                    </div>
+
+                    <div>
+                        <button class="btn btn-warning" (click)="file98.click()" [disabled]="isUploading">
+                            <span *ngIf="isUploading" class="spinner-border spinner-border-sm me-1"></span>
+                            Отправить результаты проверки СБ
+                        </button>
+                        <input type="file" #file98 (change)="uploadDocument(98, $event)" hidden
+                            accept=".pdf,.doc,.docx,.jpg,.png">
+                    </div>
+                    <div class="vr"></div>
+                </div>
+
+                <div style="display: flex; gap: 10px;">
+
+                    <button class="btn btn-outline-danger" (click)="deactivate()"
+                        [disabled]="order.wholesaleOrderStatus !== 1">
+                        Заблокировать оптовые цены
+                    </button>
+
+                    <button class="btn btn-outline-success" (click)="activate()"
+                        [disabled]="order.wholesaleOrderStatus === 1">
+                        Разблокировать оптовые цены
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<ng-template #loadingTpl>
+    <div class="text-center mt-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Загрузка...</span>
+        </div>
+        <p class="mt-2">Загрузка данных заявки...</p>
+    </div>
+</ng-template>

@@ -1,0 +1,285 @@
+<div class="order-container" *ngIf="!isLoading && order">
+  <!-- Header -->
+  <div class="order-header">
+    <div class="header-content">
+      <div class="order-title">
+        <h1>Заказ №{{ order.orderNumber || orderId }}</h1>
+        <div class="status-badge" [style.background-color]="getStatusColor(order.orderStatus)"
+             [title]="'Текущий статус заказа: ' + getStatusName(order.orderStatus)">
+          <span class="status-icon-inline">{{ statuses[order.orderStatus]?.icon }}</span>
+          {{ getStatusName(order.orderStatus) }}
+        </div>
+      </div>
+      <div class="order-meta">
+        <span class="meta-item" title="Дата создания заказа">
+          📅 {{ formatDate(order.orderDateTime) }}
+        </span>
+        <span class="meta-item" *ngIf="order.readyDateTime" title="Планируемая дата готовности">
+          ⏰ Готов к: {{ formatDate(order.readyDateTime) }}
+        </span>
+      </div>
+    </div>
+    <div class="header-actions">
+          <button class="btn btn-print" (click)="printOrder()"
+          title="Распечатать заказ одним листом">
+    <span class="icon">🖨️</span> Печать
+  </button>
+      <button class="btn btn-secondary" (click)="toggleEdit()" *ngIf="!isEditing"
+              title="Редактировать информацию о заказе">
+        <span class="icon">✏️</span> Редактировать
+      </button>
+      <button class="btn btn-primary" (click)="saveOrder()" *ngIf="isEditing" [disabled]="isSaving"
+              title="Сохранить изменения">
+        <span class="icon">💾</span> {{ isSaving ? 'Сохранение...' : 'Сохранить' }}
+      </button>
+      <button class="btn btn-secondary" (click)="toggleEdit()" *ngIf="isEditing"
+              title="Отменить редактирование">
+        <span class="icon">✖️</span> Отмена
+      </button>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div class="alert alert-success" *ngIf="successMessage">
+    <span class="icon">✅</span> {{ successMessage }}
+  </div>
+  <div class="alert alert-error" *ngIf="errorMessage">
+    <span class="icon">❌</span> {{ errorMessage }}
+  </div>
+
+  <!-- Action Guide -->
+  <div class="action-guide" *ngIf="getAvailableStatuses().length > 0">
+    <div class="guide-header">
+      <span class="guide-icon">💡</span>
+      <strong>Доступные действия:</strong>
+    </div>
+    <div class="guide-content">
+      <p *ngIf="order.orderStatus === 1">
+        Заказ находится в обработке. Вы можете <strong>принять его в работу</strong>, установив статус "Подтвержден".
+      </p>
+      <p *ngIf="order.orderStatus === 2">
+        Заказ подтвержден. Можно начать <strong>сборку товаров</strong>.
+      </p>
+      <p *ngIf="order.orderStatus === 3">
+        Заказ в сборке. После завершения сборки отметьте его как <strong>"Готов к выдаче"</strong>.
+      </p>
+      <p *ngIf="order.orderStatus === 8">
+        Заказ готов к выдаче. После получения клиентом отметьте его как <strong>"Завершен"</strong>.
+      </p>
+      <p *ngIf="order.orderStatus !== 9 && order.orderStatus !== 11 && order.orderStatus !== 12">
+        При необходимости вы можете <strong>отменить заказ</strong> администратором.
+      </p>
+    </div>
+  </div>
+
+  <!-- Main Content Grid -->
+  <div class="main-grid">
+    <!-- Left Column -->
+    <div class="left-column">
+      <div class="info-card client-card">
+        <div class="card-header">
+          <h3><span class="icon">👤</span> Клиент</h3>
+          <span class="card-hint" title="Информация о покупателе">ℹ️</span>
+        </div>
+        <div class="info-row">
+          <span class="label">ФИО:</span>
+          <span class="value">{{ order.userInstance?.lastName }} {{ order.userInstance?.firstName }} {{ order.userInstance?.middleName }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Телефон:</span>
+          <span class="value clickable" *ngIf="order.userInstance?.phoneNumber"
+                [title]="'Позвонить: ' + order.userInstance?.phoneNumber">
+            📞 {{ order.userInstance?.phoneNumber }}
+          </span>
+          <span class="value" *ngIf="!order.userInstance?.phoneNumber">Не указан</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Email:</span>
+          <span class="value clickable" *ngIf="order.userInstance?.email"
+                [title]="'Написать на: ' + order.userInstance?.email">
+            📧 {{ order.userInstance?.email }}
+          </span>
+          <span class="value" *ngIf="!order.userInstance?.email">Не указан</span>
+        </div>
+      </div>
+
+      <div class="info-card address-card">
+        <div class="card-header">
+          <h3><span class="icon">📍</span> Адрес доставки</h3>
+          <span class="card-hint" title="Адрес для доставки заказа">ℹ️</span>
+        </div>
+        <div class="address-full">
+          <div class="address-line" *ngIf="order.address?.city">
+            <span class="address-label">Город:</span>
+            <span class="address-value">{{ order.address.city }}</span>
+          </div>
+          <div class="address-line" *ngIf="order.address?.street">
+            <span class="address-label">Улица:</span>
+            <span class="address-value">{{ order.address.street }}</span>
+          </div>
+          <div class="address-line" *ngIf="order.address?.house">
+            <span class="address-label">Дом:</span>
+            <span class="address-value">{{ order.address.house }}</span>
+          </div>
+          <div class="address-line" *ngIf="order.address?.office">
+            <span class="address-label">Офис:</span>
+            <span class="address-value">{{ order.address.office }}</span>
+          </div>
+          <div class="address-empty" *ngIf="!order.address?.city && !order.address?.street && !order.address?.house">
+            Адрес не указан
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="right-column">
+      <div class="info-card delivery-card">
+        <div class="card-header">
+          <h3><span class="icon">🚚</span> Доставка</h3>
+          <span class="card-hint" title="Информация о способе доставки">ℹ️</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Тип доставки:</span>
+          <span class="value">{{ order.deliveryType?.fullName || order.deliveryType?.shortName || 'Не указан' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Пункт выдачи:</span>
+          <span class="value">{{ order.productPlace?.shortName || order.productPlace?.fullName || 'Не указан' }}</span>
+        </div>
+      </div>
+
+      <div class="info-card payment-card">
+        <div class="card-header">
+          <h3><span class="icon">💳</span> Оплата</h3>
+          <span class="card-hint" title="Информация об оплате заказа">ℹ️</span>
+        </div>
+        <div class="payment-status" [class.paid]="order.isPaidFor" [class.unpaid]="!order.isPaidFor">
+          <span class="status-icon">{{ order.isPaidFor ? '✅' : '⏳' }}</span>
+          <span class="status-text">{{ order.isPaidFor ? 'Оплачен' : 'Не оплачен' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Способ оплаты:</span>
+          <span class="value">{{ getPaymentTypeName(order.paymentType) }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Контакт:</span>
+          <span class="value">{{ getContactTypeName(order.contactType) }}</span>
+        </div>
+        <div class="info-row" *ngIf="order.consultation">
+          <span class="label">Консультация:</span>
+          <span class="value highlight">Требуется</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Products Section -->
+  <div class="products-section" *ngIf="order.productPositions && order.productPositions.length > 0">
+    <div class="section-header">
+      <h3><span class="icon">📦</span> Товары</h3>
+      <div class="products-stats">
+        <span class="stat-badge" title="Количество уникальных позиций">{{ order.positionCount }} позиций</span>
+        <span class="stat-badge" title="Общее количество товаров">{{ order.productCount }} шт.</span>
+      </div>
+    </div>
+    <div class="products-list">
+      <div class="product-item" *ngFor="let position of order.productPositions"
+           [title]="position.product?.fullName || position.product?.shortName || 'Товар'">
+        <div class="product-info">
+          <div class="product-name">{{ position.product?.fullName || position.product?.shortName || 'Товар' }}</div>
+          <div class="product-article" *ngIf="position.product?.article">
+            <span class="article-label">Артикул:</span> {{ position.product.article }}
+          </div>
+        </div>
+        <div class="product-details">
+          <div class="detail-item" title="Количество товара">
+            <span class="detail-label">Кол-во:</span>
+            <span class="detail-value">{{ position.count }} шт.</span>
+          </div>
+          <div class="detail-item" title="Цена за единицу">
+            <span class="detail-label">Цена:</span>
+            <span class="detail-value">{{ formatPrice(position.price) }}</span>
+          </div>
+          <div class="detail-item total" title="Общая стоимость позиции">
+            <span class="detail-label">Сумма:</span>
+            <span class="detail-value">{{ formatPrice(position.totalCost) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cost Summary -->
+  <div class="cost-summary">
+    <div class="cost-header">
+      <h3><span class="icon">💰</span> Стоимость заказа</h3>
+      <span class="card-hint" title="Детализация стоимости заказа">ℹ️</span>
+    </div>
+    <div class="cost-grid">
+      <div class="cost-item">
+        <span class="cost-label">Товары:</span>
+        <span class="cost-value">{{ formatPrice(order.orderCost) }}</span>
+      </div>
+      <div class="cost-item">
+        <span class="cost-label">Доставка:</span>
+        <span class="cost-value">{{ formatPrice(order.deliveryCost) }}</span>
+      </div>
+      <div class="cost-item total">
+        <span class="cost-label">Итого к оплате:</span>
+        <span class="cost-value">{{ formatPrice(order.totalCost) }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status Change -->
+  <div class="status-section" *ngIf="getAvailableStatuses().length > 0">
+    <div class="section-header">
+      <h3><span class="icon">🔄</span> Управление статусом</h3>
+      <span class="card-hint" title="Выберите следующий статус для заказа">ℹ️</span>
+    </div>
+    <p class="status-hint">
+      Текущий статус: <strong>{{ getStatusName(order.orderStatus) }}</strong>. 
+      Выберите одно из доступных действий:
+    </p>
+    <div class="status-buttons">
+      <button
+        *ngFor="let status of getAvailableStatuses()"
+        class="status-btn"
+        [class.destructive]="status.isDestructive"
+        (click)="changeStatus(status.value)"
+        [disabled]="isSaving"
+        [title]="status.description">
+        <span class="status-btn-icon">{{ status.icon }}</span>
+        <span class="status-btn-content">
+          <span class="status-btn-label">{{ status.label }}</span>
+          <span class="status-btn-desc">{{ status.description }}</span>
+        </span>
+        <span class="status-btn-arrow" *ngIf="!status.isDestructive">→</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- No Actions Available -->
+  <div class="no-actions" *ngIf="getAvailableStatuses().length === 0">
+    <div class="no-actions-icon">✓</div>
+    <h4>Заказ завершен</h4>
+    <p>Дальнейшие действия с заказом недоступны</p>
+  </div>
+</div>
+
+<!-- Loading -->
+<div class="loading-container" *ngIf="isLoading">
+  <div class="spinner"></div>
+  <p>Загрузка заказа...</p>
+</div>
+
+<!-- Error -->
+<div class="error-container" *ngIf="!isLoading && !order && errorMessage">
+  <div class="error-icon">⚠️</div>
+  <h2>Ошибка загрузки</h2>
+  <p>{{ errorMessage }}</p>
+  <button class="btn btn-primary" (click)="loadOrder()" title="Повторить попытку загрузки">
+    Попробовать снова
+  </button>
+</div>
