@@ -24,10 +24,10 @@
           title="Распечатать заказ одним листом">
     <span class="icon">🖨️</span> Печать
   </button>
-      <button class="btn btn-secondary" (click)="toggleEdit()" *ngIf="!isEditing"
+      <!-- <button class="btn btn-secondary" (click)="toggleEdit()" *ngIf="!isEditing"
               title="Редактировать информацию о заказе">
         <span class="icon">✏️</span> Редактировать
-      </button>
+      </button> -->
       <button class="btn btn-primary" (click)="saveOrder()" *ngIf="isEditing" [disabled]="isSaving"
               title="Сохранить изменения">
         <span class="icon">💾</span> {{ isSaving ? 'Сохранение...' : 'Сохранить' }}

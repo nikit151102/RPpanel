@@ -91,11 +91,18 @@ export class WholesaleOrderService {
         );
     }
 
+    // НОВЫЙ МЕТОД: Обновление заявки (отправляем только id, viewPriceType, salePercent)
+    updateOrder(id: string, data: { id: string, viewPriceType: number, salePercent: number }): Observable<any> {
+        return this.http.put(
+            `${this.baseUrl}/${id}`, 
+            data, 
+            { headers: this.getHeaders() }
+        );
+    }
+
     addDocuments(id: string, files: File[], documentTypes: number[]): Observable<any> {
         const formData = new FormData();
-
         files.forEach(file => formData.append('files', file, file.name));
-
         documentTypes.forEach(type => formData.append('orderDocumentTypes', type.toString()));
 
         return this.http.put(

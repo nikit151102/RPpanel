@@ -1,0 +1,203 @@
+<div class="niche-app">
+    <!-- Toast -->
+    <div *ngIf="toast" class="toast" [ngClass]="toast.type">
+        {{ toast.message }}
+    </div>
+
+    <!-- Loader -->
+    <div *ngIf="isLoading" class="loader-overlay">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div class="main-app">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <h1>📦 Управление нишами товаров</h1>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-outline" (click)="logout()">Выйти</button>
+            </div>
+        </header>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <div class="search-box">
+                <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
+                    placeholder="🔍 Поиск ниши по названию...">
+                <button class="btn btn-primary" (click)="onSearch()">Найти</button>
+            </div>
+            <button class="btn btn-success" (click)="openCreateModal()">
+                ➕ Создать нишу
+            </button>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-bar">
+            <div class="stat">
+                <span class="stat-value">{{ totalCount }}</span>
+                <span class="stat-label">Всего ниш</span>
+            </div>
+            <div class="stat">
+                <span class="stat-value">{{ niches.length }}</span>
+                <span class="stat-label">На странице</span>
+            </div>
+            <div class="stat">
+                <span class="stat-value">{{ currentPage + 1 }}</span>
+                <span class="stat-label">Страница</span>
+            </div>
+        </div>
+
+        <!-- Niches Grid -->
+        <div class="niches-grid" *ngIf="niches.length > 0">
+            <div class="niche-card" *ngFor="let niche of niches; trackBy: trackById">
+                <div class="niche-header">
+                    <div class="niche-badge">{{ niche.code || '—' }}</div>
+                    <div class="niche-actions">
+                        <button class="icon-btn" title="Просмотр" (click)="viewNiche(niche)">👁️</button>
+                        <button class="icon-btn" title="Редактировать" (click)="openEditModal(niche)">✏️</button>
+                        <button class="icon-btn danger" title="Удалить" (click)="deleteNiche(niche)">🗑️</button>
+                    </div>
+                </div>
+                <h3 class="niche-title">{{ niche.name }}</h3>
+                <p class="niche-desc">{{ niche.description || 'Нет описания' }}</p>
+                <div class="niche-meta">
+                    <span class="meta-item">📦 {{ niche.productCount || 0 }} товаров</span>
+                    <span class="meta-item">📂 {{ (niche.subCategories?.length) || 0 }} категорий</span>
+                </div>
+                <div class="niche-footer">
+                    <button class="btn btn-sm btn-outline" (click)="openCategoriesModal(niche)">
+                        📂 Категории
+                    </button>
+                    <button class="btn btn-sm btn-outline" (click)="openProductsModal(niche)">
+                        🛒 Товары
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="!niches.length && !isLoading" class="empty-state">
+            <div class="empty-icon">📭</div>
+            <h3>Ниши не найдены</h3>
+            <p>Создайте первую нишу или измените параметры поиска</p>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" *ngIf="totalCount > pageSize">
+            <button class="btn btn-outline" (click)="prevPage()" [disabled]="currentPage === 0">← Назад</button>
+            <span class="page-info">Страница {{ currentPage + 1 }}</span>
+            <button class="btn btn-outline" (click)="nextPage()"
+                [disabled]="(currentPage + 1) * pageSize >= totalCount">Вперёд →</button>
+        </div>
+    </div>
+
+    <!-- MODAL: CREATE / EDIT -->
+    <div class="modal-overlay" *ngIf="modalMode === 'create' || modalMode === 'edit'" (click)="closeModal()">
+        <div class="modal" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h2>{{ modalMode === 'create' ? '➕ Новая ниша' : '✏️ Редактирование ниши' }}</h2>
+                <button class="close-btn" (click)="closeModal()">✕</button>
+            </div>
+            <form [formGroup]="nicheForm" (ngSubmit)="saveNiche()">
+                <div class="form-group">
+                    <label>Код <span class="req">*</span></label>
+                    <input type="text" formControlName="code" placeholder="NICHE_001">
+                </div>
+                <div class="form-group">
+                    <label>Название <span class="req">*</span></label>
+                    <input type="text" formControlName="name" placeholder="Например: Одноразовая посуда">
+                </div>
+                <div class="form-group">
+                    <label>Описание</label>
+                    <textarea formControlName="description" rows="4"
+                        placeholder="Подробное описание ниши..."></textarea>
+                </div>
+                <!-- <div class="form-group">
+          <label>Тип отображения</label>
+          <select formControlName="viewType">
+            <option [value]="0">Стандартный</option>
+            <option [value]="1">Расширенный</option>
+          </select>
+        </div> -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" (click)="closeModal()">Отмена</button>
+                    <button type="submit" class="btn btn-primary" [disabled]="nicheForm.invalid">
+                        {{ modalMode === 'create' ? 'Создать' : 'Сохранить' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: CATEGORIES -->
+    <div class="modal-overlay" *ngIf="modalMode === 'categories'" (click)="closeModal()">
+        <div class="modal modal-lg" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h2>📂 Категории ниши: {{ selectedNiche?.name }}</h2>
+                <button class="close-btn" (click)="closeModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="picker-search">
+                    <input type="text" [(ngModel)]="categorySearch" placeholder="🔍 Поиск категории...">
+                </div>
+                <div class="picker-info">
+                    Выбрано: <strong>{{ selectedCategoryIds.size }}</strong>
+                </div>
+                <div class="picker-list">
+                    <label class="picker-item" *ngFor="let cat of allCategories | filterByName: categorySearch">
+                        <input type="checkbox" [checked]="selectedCategoryIds.has(cat.id)"
+                            (change)="toggleCategory(cat.id)">
+                        <div class="picker-content">
+                            <div class="picker-title">{{ cat.name }}</div>
+                            <div class="picker-sub">{{ cat.shortName || cat.code }}</div>
+                        </div>
+                    </label>
+                    <div *ngIf="!allCategories.length" class="empty-picker">Категории не загружены</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" (click)="closeModal()">Отмена</button>
+                <button class="btn btn-primary" (click)="saveCategories()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: PRODUCTS -->
+    <div class="modal-overlay" *ngIf="modalMode === 'products'" (click)="closeModal()">
+        <div class="modal modal-lg" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h2>🛒 Товары ниши: {{ selectedNiche?.name }}</h2>
+                <button class="close-btn" (click)="closeModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="picker-search">
+                    <input type="text" [(ngModel)]="productSearch" (keyup.enter)="searchProductsForModal()"
+                        placeholder="🔍 Поиск товара...">
+                    <button class="btn btn-sm btn-primary" (click)="searchProductsForModal()">Найти</button>
+                </div>
+                <div class="picker-info">
+                    Выбрано: <strong>{{ selectedProductIds.size }}</strong>
+                </div>
+                <div class="picker-list">
+                    <label class="picker-item product-item" *ngFor="let p of allProducts">
+                        <input type="checkbox" [checked]="selectedProductIds.has(p.id)" (change)="toggleProduct(p.id)">
+                        <img *ngIf="p?.productImageLinks?.length && p.productImageLinks" [src]="p.productImageLinks[0]"
+                            class="product-thumb">
+                        <div class="picker-content">
+                            <div class="picker-title">{{ p.fullName || p.article }}</div>
+                            <div class="picker-sub">
+                                Арт: {{ p.article }} · {{ p.retailPriceDest | number:'1.2-2' }} ₽
+                            </div>
+                        </div>
+                    </label>
+                    <div *ngIf="!allProducts.length" class="empty-picker">Товары не найдены</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" (click)="closeModal()">Отмена</button>
+                <button class="btn btn-primary" (click)="saveProducts()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>

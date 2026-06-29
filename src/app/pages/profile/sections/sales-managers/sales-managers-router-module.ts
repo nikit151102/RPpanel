@@ -20,6 +20,10 @@ const routes: Routes = [
                 path: 'statistics-complaints',
                 loadComponent: () => import('./tabs/incidents-dashboard/incidents-dashboard.component').then(m => m.IncidentsDashboardComponent)
             },
+            {
+                path: 'niche',
+                loadComponent: () => import('./tabs/niche/niche.component').then(m => m.NicheComponent)
+            },
 
 
             { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
