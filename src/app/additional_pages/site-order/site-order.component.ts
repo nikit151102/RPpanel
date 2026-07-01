@@ -29,25 +29,25 @@ export class SiteOrderComponent implements OnInit {
   successMessage: string = '';
 
   statuses: { [key: number]: { label: string; icon: string; description: string; isDestructive: boolean } } = {
-    0:  { label: 'Черновик',                 icon: '📝', description: 'Заказ создан, но не отправлен',             isDestructive: false },
-    1:  { label: 'Обработка',                icon: '⚙️', description: 'Заказ находится в обработке',               isDestructive: false },
-    2:  { label: 'Подтвержден',              icon: '✅', description: 'Заказ принят в работу и подтвержден',        isDestructive: false },
-    3:  { label: 'В сборке',                 icon: '📦', description: 'Товары собираются для заказа',              isDestructive: false },
-    4:  { label: 'Передан в доставку',       icon: '🚚', description: 'Заказ передан курьеру',                     isDestructive: false },
-    5:  { label: 'На доработке',             icon: '🔧', description: 'Заказ требует доработки',                   isDestructive: false },
-    6:  { label: 'Зарезервирован',           icon: '🔒', description: 'Заказ зарезервирован',                      isDestructive: false },
-    8:  { label: 'Готов к выдаче',           icon: '🎁', description: 'Заказ готов и ждет клиента',                isDestructive: false },
-    9:  { label: 'Завершен',                 icon: '🏁', description: 'Заказ успешно завершен',                    isDestructive: false },
-    10: { label: 'Отложен',                  icon: '⏸️', description: 'Заказ временно отложен',                    isDestructive: false },
-    11: { label: 'Отменен пользователем',    icon: '❌', description: 'Заказ отменен клиентом',                    isDestructive: true  },
-    12: { label: 'Отменен администратором',  icon: '🚫', description: 'Отменить заказ от имени администратора',    isDestructive: true  }
+    0: { label: 'Черновик', icon: '📝', description: 'Заказ создан, но не отправлен', isDestructive: false },
+    1: { label: 'Обработка', icon: '⚙️', description: 'Заказ находится в обработке', isDestructive: false },
+    2: { label: 'Подтвержден', icon: '✅', description: 'Заказ принят в работу и подтвержден', isDestructive: false },
+    3: { label: 'В сборке', icon: '📦', description: 'Товары собираются для заказа', isDestructive: false },
+    4: { label: 'Передан в доставку', icon: '🚚', description: 'Заказ передан курьеру', isDestructive: false },
+    5: { label: 'На доработке', icon: '🔧', description: 'Заказ требует доработки', isDestructive: false },
+    6: { label: 'Зарезервирован', icon: '🔒', description: 'Заказ зарезервирован', isDestructive: false },
+    8: { label: 'Готов к выдаче', icon: '🎁', description: 'Заказ готов и ждет клиента', isDestructive: false },
+    9: { label: 'Завершен', icon: '🏁', description: 'Заказ успешно завершен', isDestructive: false },
+    10: { label: 'Отложен', icon: '⏸️', description: 'Заказ временно отложен', isDestructive: false },
+    11: { label: 'Отменен пользователем', icon: '❌', description: 'Заказ отменен клиентом', isDestructive: true },
+    12: { label: 'Отменен администратором', icon: '🚫', description: 'Отменить заказ от имени администратора', isDestructive: true }
   };
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private orderApi: OrderApiService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.orderId = this.route.snapshot.paramMap.get('id') || '';
@@ -62,16 +62,16 @@ export class SiteOrderComponent implements OnInit {
   loadOrder(): void {
     this.isLoading = true;
     this.errorMessage = '';
+
     this.orderApi.getOrder(this.orderId).subscribe({
       next: (response) => {
         try {
           const data = typeof response === 'string' ? JSON.parse(response) : response;
           this.order = data.data || data;
-          this.isLoading = false;
         } catch (e) {
           this.errorMessage = 'Ошибка обработки данных заказа';
-          this.isLoading = false;
         }
+        this.isLoading = false;
       },
       error: (error) => {
         this.errorMessage = 'Ошибка загрузки заказа: ' + (error.message || 'Неизвестная ошибка');
@@ -213,10 +213,9 @@ export class SiteOrderComponent implements OnInit {
     return types[type] || 'Не указан';
   }
 
-
   printOrder(): void {
-  setTimeout(() => {
-    window.print();
-  }, 100);
-}
+    setTimeout(() => {
+      window.print();
+    }, 100);
+  }
 }

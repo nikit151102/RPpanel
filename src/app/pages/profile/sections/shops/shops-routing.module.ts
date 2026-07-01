@@ -10,6 +10,7 @@ import { referenceConfig } from './tabs/configs/ReferenceConf';
 import { ShopsManagementComponent } from './tabs/shops-management/shops-management.component';
 import { StorePlanComponent } from './tabs/store-plan/store-plan.component';
 import { SignatureComponent } from './tabs/signature/signature.component';
+import { CollectionComponent } from './tabs/collection/collection.component';
 
 
 const routes: Routes = [
@@ -22,8 +23,8 @@ const routes: Routes = [
             { path: 'discount-qr', component: DiscountQrComponent },
             { path: 'monthly-plans', component: StorePlanComponent },
             { path: 'management', component: ShopsManagementComponent },
+            { path: 'collection', component: CollectionComponent },
             { path: 'signature/:id', component: SignatureComponent },
-            
             {
                 path: 'directories', component: ReferenceComponent, data: {
                     config: {

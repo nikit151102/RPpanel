@@ -72,7 +72,7 @@ export class OrderApiService {
   private isRefreshing = false;
   private refreshTokenSubject: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   private getToken(): string | null {
     return localStorage.getItem(this.tokenKey);
@@ -87,7 +87,7 @@ export class OrderApiService {
     return new HttpHeaders({
       'Content-Type': 'application/json',
       'Accept': 'text/plain',
-      'Authorization': token ? `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJmOGFmYTA5ZS1kOWIyLTRmOTktYTBmZS02OGMxMjgwMmIyYzEiLCJ1bmlxdWVfbmFtZSI6IkFkbWluMSIsImVtYWlsIjoiMSIsInJvbGUiOlsi0JTQuNGA0LXQutGC0L7RgCIsIkFkbWluIiwiVXNlciJdLCJuYmYiOjE3ODIyODQzMjAsImV4cCI6MTc4MjgwMjcyMCwiaWF0IjoxNzgyMjg0MzIwfQ.hurfZTwWX-7vKJtdKfifKesbkkwiL5cTSYn7GE3H5v4` : ''
+      'Authorization': `Bearer ${token}`
     });
   }
 
@@ -110,11 +110,11 @@ export class OrderApiService {
   }
 
   getOrder(id: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/api/Entities/DeliveryOrder/${id}`, {
-      headers: this.getHeaders(),
-      responseType: 'text'
-    }).pipe(
-      catchError(error => this.handleError(error, () => this.getOrder(id)))
+    return this.http.get(
+      `${this.apiUrl}/api/Entities/DeliveryOrder/${id}`,
+      { headers: this.getHeaders(), responseType: 'text' }
+    ).pipe(
+      catchError(error => this.handleError(error, () => this.getOrder(id))) // ✅ ИСПРАВЛЕНО: добавлен handleError
     );
   }
 

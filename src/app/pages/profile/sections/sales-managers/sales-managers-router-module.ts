@@ -24,8 +24,6 @@ const routes: Routes = [
                 path: 'niche',
                 loadComponent: () => import('./tabs/niche/niche.component').then(m => m.NicheComponent)
             },
-
-
             { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
         ]
     },
